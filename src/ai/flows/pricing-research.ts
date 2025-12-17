@@ -16,11 +16,13 @@ import {z} from 'genkit';
 const PricingResearchInputSchema = z.object({
   brand: z.string().describe('The brand of the item.'),
   model: z.string().describe('The model of the item.'),
+  size: z.string().optional().describe('The size of the item.'),
+  condition: z.string().describe('The condition of the item (e.g., new, used).'),
 });
 export type PricingResearchInput = z.infer<typeof PricingResearchInputSchema>;
 
 const PricingResearchOutputSchema = z.object({
-  searchQueries: z.array(z.string()).describe('An array of search queries for eBay, Poshmark, and Mercari.'),
+  searchQueries: z.array(z.string()).describe('An array of search URLs for eBay, Poshmark, and Mercari/Amazon.'),
 });
 export type PricingResearchOutput = z.infer<typeof PricingResearchOutputSchema>;
 
@@ -48,12 +50,34 @@ const pricingResearchPrompt = ai.definePrompt({
   name: 'pricingResearchPrompt',
   input: {schema: PricingResearchInputSchema},
   output: {schema: PricingResearchOutputSchema},
-  prompt: `You are an expert reseller assistant. Generate search queries for eBay, Poshmark, and Mercari to research the pricing of an item.
+  prompt: `You are an expert reseller assistant. Your task is to generate search URLs for various marketplaces to help a user research the price of an item.
 
-  Brand: {{{brand}}}
-  Model: {{{model}}}
+  You will be given the item's brand, model, size, and condition.
 
-  Return an array of search queries for these platforms. Make sure the search queries are specific to finding the price of the given item.
+  Item Details:
+  - Brand: {{{brand}}}
+  - Model: {{{model}}}
+  - Size: {{{size}}}
+  - Condition: {{{condition}}}
+
+  Instructions:
+  1. Create a search query string that includes the brand, model, and size (if available).
+  2. Based on the item's condition, generate search URLs for the appropriate platforms:
+     - If the condition is 'New with tags', 'New', or similar, generate URLs for:
+       - Poshmark
+       - eBay
+       - Amazon
+     - If the condition is 'Used', 'Excellent used condition', or similar, generate URLs for:
+       - Poshmark
+       - eBay
+       - Mercari
+  3. Format the output as a JSON object containing an array of these URLs.
+
+  Example query: "Nike Air Max 90 10.5"
+  Example URL for Poshmark: "https://poshmark.com/search?query=Nike+Air+Max+90+10.5"
+  Example URL for eBay: "https://www.ebay.com/sch/i.html?_nkw=Nike+Air+Max+90+10.5"
+  Example URL for Mercari: "https://www.mercari.com/search/?keyword=Nike+Air+Max+90+10.5"
+  Example URL for Amazon: "https://www.amazon.com/s?k=Nike+Air+Max+90+10.5"
   `,
 });
 

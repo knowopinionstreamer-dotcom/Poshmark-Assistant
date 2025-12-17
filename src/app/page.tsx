@@ -10,7 +10,7 @@ import {
   pricingResearchAction,
   visualSearchAction,
 } from '@/app/actions';
-import { ArrowRight, CheckCircle2, FileText } from 'lucide-react';
+import { ArrowRight, CheckCircle2, FileText, Sparkles } from 'lucide-react';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,7 @@ export default function PoshmarkProListerPage() {
       images: [],
       brand: '',
       model: '',
+      size: '',
       style: '',
       color: '',
       gender: '',
@@ -81,6 +82,7 @@ export default function PoshmarkProListerPage() {
       images: [],
       brand: '',
       model: '',
+      size: '',
       style: '',
       color: '',
       gender: '',
@@ -134,7 +136,7 @@ export default function PoshmarkProListerPage() {
   };
   
   const handleTextSearch = async () => {
-    const { brand, model } = form.getValues();
+    const { brand, model, size, condition } = form.getValues();
     if (!brand || !model) {
       toast({
         variant: 'destructive',
@@ -146,7 +148,7 @@ export default function PoshmarkProListerPage() {
     setLoadingStates(prev => ({ ...prev, textSearch: true }));
     setTextSearchResults([]);
     try {
-      const result = await pricingResearchAction({ brand, model });
+      const result = await pricingResearchAction({ brand, model, size, condition: condition || 'Used' });
       setTextSearchResults(result.searchQueries);
       toast({ title: 'Text Search Complete' });
     } catch (error) {
@@ -173,7 +175,7 @@ export default function PoshmarkProListerPage() {
       setVisualSearchResults(result.searchResults);
       toast({ title: 'Visual Search Complete' });
     } catch (error) {
-      toast({ variant: 'destructive', title: 'Visual Search Failed', description: (error as Error).message });
+       toast({ variant: 'destructive', title: 'Visual Search Failed', description: (error as Error).message });
     } finally {
       setLoadingStates(prev => ({ ...prev, visualSearch: false }));
     }

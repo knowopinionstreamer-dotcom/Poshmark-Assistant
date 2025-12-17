@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { ExternalLink, Search, ImageIcon, Loader2 } from 'lucide-react';
+import { URL } from 'url';
 
 type PricingResearchProps = {
     onTextSearch: () => void;
@@ -15,6 +16,20 @@ type PricingResearchProps = {
     textQueries: string[] | null;
     visualQueries: string[] | null;
 }
+
+const getPlatformName = (url: string) => {
+    try {
+        const hostname = new URL(url).hostname;
+        if (hostname.includes('poshmark')) return 'Poshmark';
+        if (hostname.includes('ebay')) return 'eBay';
+        if (hostname.includes('mercari')) return 'Mercari';
+        if (hostname.includes('amazon')) return 'Amazon';
+        return hostname;
+    } catch (e) {
+        return 'Search Result';
+    }
+};
+
 
 export default function PricingResearch({ 
     onTextSearch, 
@@ -30,16 +45,16 @@ export default function PricingResearch({
     (results && results.length > 0) && (
       <div className="space-y-2">
         <h4 className="font-semibold">{title}</h4>
-        <ul className="space-y-1 list-disc list-inside">
+        <ul className="space-y-1 list-none p-0">
           {results.map((result, index) => (
             <li key={index}>
               <a
-                href={isSearch ? `https://www.google.com/search?q=${encodeURIComponent(result)}` : result}
+                href={result}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary hover:underline inline-flex items-center"
               >
-                {result} <ExternalLink className="ml-1 h-3 w-3" />
+                {isSearch ? `Search on ${getPlatformName(result)}` : result} <ExternalLink className="ml-1 h-3 w-3" />
               </a>
             </li>
           ))}
@@ -67,7 +82,7 @@ export default function PricingResearch({
         </div>
         
         <div className="space-y-4">
-            {renderSearchResults("Text Search Queries", textQueries, true)}
+            {renderSearchResults("Text Search Results", textQueries, true)}
             {renderSearchResults("Visual Search Results", visualQueries, false)}
         </div>
 

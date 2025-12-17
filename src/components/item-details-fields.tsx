@@ -34,6 +34,7 @@ export default function ItemDetailsFields({ isAnalyzing, footerActions }: ItemDe
                 <FieldSkeleton />
                 <FieldSkeleton />
                 <FieldSkeleton />
+                <FieldSkeleton />
             </>
             ) : (
             <>
@@ -58,6 +59,19 @@ export default function ItemDetailsFields({ isAnalyzing, footerActions }: ItemDe
                     <FormLabel>Model / Name</FormLabel>
                     <FormControl>
                         <Input placeholder="e.g. Air Max 90" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={control}
+                name="size"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Size</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g. 10.5" {...field} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>

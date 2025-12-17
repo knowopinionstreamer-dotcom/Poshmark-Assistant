@@ -4,6 +4,7 @@ export const listingFormSchema = z.object({
   images: z.array(z.string()).min(1, "Please upload at least one image."),
   brand: z.string().optional(),
   model: z.string().optional(),
+  size: z.string().optional(),
   style: z.string().optional(),
   color: z.string().optional(),
   gender: z.string().optional(),
