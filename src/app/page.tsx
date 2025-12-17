@@ -203,10 +203,10 @@ export default function PoshmarkProListerPage() {
         condition: condition!,
       });
       form.setValue('title', result.title);
-      const originalDescription = form.getValues('description') || '';
-      const disclaimer = `\n\n**Buyer Information:** Thank you for your interest! Please review all photos and the description carefully before purchasing. All sales are final. Feel free to ask any questions. Happy Poshing!`;
-      const newDescription = `${result.description}\n\n--- AI Generated Details ---\n${originalDescription}`;
-      form.setValue('description', newDescription + disclaimer);
+      
+      const disclaimer = `\n\n**BUYER INFORMATION (Please Read):**\n\nPhotos are of actual sale item and accurately represent its condition. Any marks or imperfections should be in the photos.\nIf you have any questions or concerns or want more photos, please ask BEFORE purchase.\nThe items color may be slightly different due to your screen settings and lighting.\nEverything comes from a smoke-free, pet-free environment.\nAll reasonable offers considered. Bundle 2 or more items for discounted Price and Shipping.\nItem is Cross-listed\nThanks for looking! Check out my other listings for more great items and prices!!!`;
+      
+      form.setValue('description', result.description + disclaimer);
       setListingDraft(result);
       toast({ title: 'Draft Generated', description: 'Your listing title and description are ready.' });
     } catch (error) {
