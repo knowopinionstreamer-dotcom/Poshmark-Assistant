@@ -1,3 +1,10 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "uploader-placeholder",
+      "description": "A placeholder image for the Poshmark Pro Lister image uploader, featuring an abstract representation of clothing on a rack in shades of violet and purple.",
+      "imageUrl": "https://images.unsplash.com/photo-1619792423784-6c298b30299a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxhYnN0cmFjdCUyMGNsb3RoaW5nfGVufDB8fHx8MTc2NTk0MDY5OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "abstract clothing"
+    }
+  ]
 }
