@@ -222,6 +222,7 @@ export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, ima
       {hasImages && (
         <CardFooter className="pt-2">
             <Button 
+                variant="secondary"
                 onClick={onAnalyze} 
                 disabled={isLoading} 
                 className="w-full text-lg h-12"

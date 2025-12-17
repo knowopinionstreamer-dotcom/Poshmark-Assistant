@@ -229,6 +229,7 @@ export default function PoshmarkProListerPage() {
         </Button>
 
         <Button 
+            variant="secondary"
             onClick={() => setActiveTab('pricing')}
             className="flex-1 sm:flex-none"
         >
@@ -284,7 +285,7 @@ export default function PoshmarkProListerPage() {
                           visualQueries={visualSearchResults}
                         />
                          <div className="flex justify-end">
-                            <Button onClick={() => setActiveTab("draft")} size="lg" className="w-full sm:w-auto">
+                            <Button onClick={() => setActiveTab("draft")} size="lg" variant="secondary" className="w-full sm:w-auto">
                                 I have my price, go to Final Step <CheckCircle2 className="ml-2 h-5 w-5" />
                             </Button>
                         </div>

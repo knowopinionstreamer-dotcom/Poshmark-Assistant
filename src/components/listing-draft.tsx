@@ -24,7 +24,7 @@ export default function ListingDraft({ onGenerateDraft, isLoading }: ListingDraf
         <CardDescription>Generate a compelling title and description for your listing.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Button onClick={onGenerateDraft} disabled={isLoading} className="w-full">
+        <Button onClick={onGenerateDraft} disabled={isLoading} className="w-full" variant="secondary">
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2" />}
           Generate Listing Draft
         </Button>
