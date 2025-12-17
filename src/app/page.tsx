@@ -279,14 +279,14 @@ export default function PoshmarkProListerPage() {
             
             <TabsContent value="details">
                  <div className="space-y-8">
-                    <ImagePreview images={images} onClear={handleClearImages} />
+                    <ImagePreview images={images} showClearButton={false} />
                     <ItemDetailsFields isAnalyzing={loadingStates.analysis} footerActions={itemDetailsFooter} />
                 </div>
             </TabsContent>
 
             <TabsContent value="pricing">
                 <div className="space-y-8">
-                    <ImagePreview images={images} onClear={handleClearImages} />
+                    <ImagePreview images={images} showClearButton={false} />
                     <div className="space-y-4">
                         <PricingResearch 
                           onTextSearch={handleTextSearch}
@@ -298,7 +298,7 @@ export default function PoshmarkProListerPage() {
                           suggestedPrice={textSearchResults?.suggestedPrice}
                         />
                          <div className="flex justify-end">
-                            <Button onClick={() => setActiveTab("draft")} size="lg" variant="secondary" className="w-full sm:w-auto">
+                            <Button onClick={() => { setActiveTab("draft"); handleDraftGeneration(); }} size="lg" variant="secondary" className="w-full sm:w-auto">
                                 I have my price, go to Final Step <CheckCircle2 className="ml-2 h-5 w-5" />
                             </Button>
                         </div>
@@ -308,7 +308,7 @@ export default function PoshmarkProListerPage() {
 
             <TabsContent value="draft">
                 <div className="space-y-8">
-                    <ImagePreview images={images} onClear={handleClearImages} />
+                    <ImagePreview images={images} showClearButton={false} />
                     <ListingDraft 
                       onGenerateDraft={handleDraftGeneration} 
                       isLoading={loadingStates.draft}

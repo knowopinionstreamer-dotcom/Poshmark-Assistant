@@ -8,10 +8,11 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 
 type ImagePreviewProps = {
   images: string[];
-  onClear: () => void;
+  onClear?: () => void;
+  showClearButton?: boolean;
 };
 
-export default function ImagePreview({ images, onClear }: ImagePreviewProps) {
+export default function ImagePreview({ images, onClear, showClearButton = true }: ImagePreviewProps) {
   const hasImages = images.length > 0;
 
   if (!hasImages) {
@@ -22,10 +23,12 @@ export default function ImagePreview({ images, onClear }: ImagePreviewProps) {
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Item Images</CardTitle>
-        <Button variant="ghost" size="sm" onClick={onClear}>
-            <X className="mr-2 h-4 w-4" />
-            Clear All
-        </Button>
+        {onClear && showClearButton && (
+            <Button variant="ghost" size="sm" onClick={onClear}>
+                <X className="mr-2 h-4 w-4" />
+                Clear All
+            </Button>
+        )}
       </CardHeader>
       <CardContent>
         <Carousel className="w-full">
