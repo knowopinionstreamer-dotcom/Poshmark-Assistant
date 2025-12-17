@@ -1,20 +1,41 @@
 'use client';
 
 import { useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm, FormProvider } from 'react-hook-form';
-import { listingFormSchema, type ListingFormValues } from '@/app/schema';
+import { useToast } from '@/hooks/use-toast';
+import {
+  analyzeImagesAction,
+  draftGenerationAction,
+  pricingResearchAction,
+  visualSearchAction,
+} from '@/app/actions';
+import { ArrowRight, CheckCircle2, FileText } from 'lucide-react';
+
+// UI Components
+import { Button } from '@/components/ui/button';
 import ImageUploader from '@/components/image-uploader';
 import ItemDetailsFields from '@/components/item-details-fields';
 import PricingResearch from '@/components/pricing-research';
 import ListingDraft from '@/components/listing-draft';
-import { useToast } from '@/hooks/use-toast';
-import { analyzeImagesAction } from '@/app/actions';
-import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { listingFormSchema, type ListingFormValues } from '@/app/schema';
+import type { DraftGenerationOutput } from '@/ai/flows/draft-generation';
 
 export default function PoshmarkProListerPage() {
+  const [activeTab, setActiveTab] = useState('upload');
   const { toast } = useToast();
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const [loadingStates, setLoadingStates] = useState({
+    analysis: false,
+    textSearch: false,
+    visualSearch: false,
+    draft: false,
+  });
+
+  const [textSearchResults, setTextSearchResults] = useState<string[]>([]);
+  const [visualSearchResults, setVisualSearchResults] = useState<string[]>([]);
+  const [listingDraft, setListingDraft] = useState<DraftGenerationOutput | null>(null);
 
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingFormSchema),
@@ -26,6 +47,8 @@ export default function PoshmarkProListerPage() {
       color: '',
       gender: '',
       condition: 'Used',
+      title: '',
+      description: '',
     },
   });
 
@@ -34,8 +57,11 @@ export default function PoshmarkProListerPage() {
   const handleImageUpload = (newImages: string[]) => {
     const currentImages = form.getValues('images');
     form.setValue('images', [...currentImages, ...newImages], { shouldValidate: true });
+    setListingDraft(null);
+    setTextSearchResults([]);
+    setVisualSearchResults([]);
   };
-  
+
   const handleClearImages = () => {
     form.reset({
       images: [],
@@ -47,8 +73,11 @@ export default function PoshmarkProListerPage() {
       condition: 'Used',
       title: '',
       description: '',
-      targetPrice: undefined
+      targetPrice: undefined,
     });
+    setListingDraft(null);
+    setTextSearchResults([]);
+    setVisualSearchResults([]);
   };
 
   const handleAnalyze = async () => {
@@ -61,7 +90,8 @@ export default function PoshmarkProListerPage() {
       });
       return;
     }
-    setIsAnalyzing(true);
+    setLoadingStates(prev => ({ ...prev, analysis: true }));
+    setActiveTab('details');
     try {
       const result = await analyzeImagesAction({ photoDataUris: images });
       if (result) {
@@ -84,9 +114,127 @@ export default function PoshmarkProListerPage() {
         description: (error as Error).message,
       });
     } finally {
-      setIsAnalyzing(false);
+      setLoadingStates(prev => ({ ...prev, analysis: false }));
     }
   };
+  
+  const handleTextSearch = async () => {
+    const { brand, model } = form.getValues();
+    if (!brand || !model) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Information',
+        description: 'Please provide both Brand and Model for text search.',
+      });
+      return;
+    }
+    setLoadingStates(prev => ({ ...prev, textSearch: true }));
+    setTextSearchResults([]);
+    try {
+      const result = await pricingResearchAction({ brand, model });
+      setTextSearchResults(result.searchQueries);
+      toast({ title: 'Text Search Complete' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Text Search Failed', description: (error as Error).message });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, textSearch: false }));
+    }
+  };
+  
+  const handleVisualSearch = async () => {
+    const { images, condition } = form.getValues();
+    if (!images || images.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Image',
+        description: 'Please upload at least one image for visual search.',
+      });
+      return;
+    }
+    setLoadingStates(prev => ({ ...prev, visualSearch: true }));
+    setVisualSearchResults([]);
+    try {
+      const result = await visualSearchAction({ photoDataUris: images, condition: condition || 'Used' });
+      setVisualSearchResults(result.searchResults);
+      toast({ title: 'Visual Search Complete' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Visual Search Failed', description: (error as Error).message });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, visualSearch: false }));
+    }
+  };
+
+  const handleDraftGeneration = async () => {
+    const values = form.getValues();
+    const { brand, model, style, color, gender, condition, targetPrice } = values;
+
+    if (!targetPrice) {
+      toast({
+        variant: 'destructive',
+        title: 'Price not set',
+        description: 'Please set a target price before generating a draft.',
+      });
+      return;
+    }
+
+    const requiredFields = { brand, model, style, color, gender, condition, targetPrice };
+
+    for (const [key, value] of Object.entries(requiredFields)) {
+        if (!value) {
+            toast({
+                variant: 'destructive',
+                title: 'Missing Information',
+                description: `Please provide the '${key}' before generating a draft.`,
+            });
+            return;
+        }
+    }
+    
+    setLoadingStates(prev => ({ ...prev, draft: true }));
+    try {
+      const result = await draftGenerationAction({
+        brand: brand!,
+        model: model!,
+        style: style!,
+        color: color!,
+        gender: gender!,
+        condition: condition!,
+        targetPrice: targetPrice!
+      });
+      form.setValue('title', result.title);
+      const originalDescription = form.getValues('description') || '';
+      const disclaimer = `\n\n**Buyer Information:** Thank you for your interest! Please review all photos and the description carefully before purchasing. All sales are final. Feel free to ask any questions. Happy Poshing!`;
+      const newDescription = `${result.description}\n\n--- AI Generated Details ---\n${originalDescription}`;
+      form.setValue('description', newDescription + disclaimer);
+      setListingDraft(result);
+      toast({ title: 'Draft Generated', description: 'Your listing title and description are ready.' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Draft Generation Failed', description: (error as Error).message });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, draft: false }));
+    }
+  };
+
+  const itemDetailsFooter = (
+     <>
+        <Button 
+            variant="outline" 
+            onClick={() => setActiveTab('draft')}
+            className="flex-1 sm:flex-none"
+        >
+            <FileText className="mr-2 h-4 w-4 text-slate-500" />
+            Skip Pricing & Generate Listing
+        </Button>
+
+        <Button 
+            onClick={() => setActiveTab('pricing')}
+            className="flex-1 sm:flex-none"
+        >
+            Continue to AI Price Comparison
+            <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+    </>
+  );
 
   return (
      <main className="container mx-auto p-4 md:p-8">
@@ -95,25 +243,91 @@ export default function PoshmarkProListerPage() {
         <p className="text-muted-foreground mt-2">Your AI-powered assistant for faster, smarter reselling.</p>
       </header>
       <FormProvider {...form}>
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-2 h-fit">
-            <ImageUploader
-              images={images}
-              onImageUpload={handleImageUpload}
-              onClear={handleClearImages}
-              onAnalyze={handleAnalyze}
-              isLoading={isAnalyzing}
-            />
-          </div>
+         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
+            <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-muted rounded-lg">
+              <TabsTrigger value="upload" className="py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">1. Upload</TabsTrigger>
+              <TabsTrigger value="details" className="py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">2. Details</TabsTrigger>
+              <TabsTrigger value="pricing" className="py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">3. Pricing</TabsTrigger>
+              <TabsTrigger value="draft" className="py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">4. Listing</TabsTrigger>
+            </TabsList>
 
-          <div className="lg:col-span-3 space-y-8">
-            <ItemDetailsFields isAnalyzing={isAnalyzing} />
-            <Separator />
-            <PricingResearch />
-            <Separator />
-            <ListingDraft />
-          </div>
-        </div>
+            <TabsContent value="upload">
+                <ImageUploader
+                    images={images}
+                    onImageUpload={handleImageUpload}
+                    onClear={handleClearImages}
+                    onAnalyze={handleAnalyze}
+                    isLoading={loadingStates.analysis}
+                />
+            </TabsContent>
+            
+            <TabsContent value="details">
+                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div className="lg:col-span-2 h-fit">
+                        <ImageUploader
+                            images={images}
+                            onImageUpload={handleImageUpload}
+                            onClear={handleClearImages}
+                            onAnalyze={handleAnalyze}
+                            isLoading={loadingStates.analysis}
+                        />
+                    </div>
+                    <div className="lg:col-span-3">
+                        <ItemDetailsFields isAnalyzing={loadingStates.analysis} footerActions={itemDetailsFooter} />
+                    </div>
+                </div>
+            </TabsContent>
+
+            <TabsContent value="pricing">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div className="lg:col-span-2 h-fit">
+                        <ImageUploader
+                            images={images}
+                            onImageUpload={handleImageUpload}
+                            onClear={handleClearImages}
+                            onAnalyze={handleAnalyze}
+                            isLoading={loadingStates.analysis}
+                        />
+                    </div>
+                    <div className="lg:col-span-3 space-y-4">
+                        <PricingResearch 
+                          onTextSearch={handleTextSearch}
+                          onVisualSearch={handleVisualSearch}
+                          isTextLoading={loadingStates.textSearch}
+                          isVisualLoading={loadingStates.visualSearch}
+                          textQueries={textSearchResults}
+                          visualQueries={visualSearchResults}
+                        />
+                         <div className="flex justify-end">
+                            <Button onClick={() => setActiveTab("draft")} size="lg" className="w-full sm:w-auto">
+                                I have my price, go to Final Step <CheckCircle2 className="ml-2 h-5 w-5" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </TabsContent>
+
+            <TabsContent value="draft">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div className="lg:col-span-2 h-fit">
+                        <ImageUploader
+                            images={images}
+                            onImageUpload={handleImageUpload}
+                            onClear={handleClearImages}
+                            onAnalyze={handleAnalyze}
+                            isLoading={loadingStates.analysis}
+                        />
+                    </div>
+                    <div className="lg:col-span-3">
+                        <ListingDraft 
+                          onGenerateDraft={handleDraftGeneration} 
+                          isLoading={loadingStates.draft}
+                        />
+                    </div>
+                </div>
+            </TabsContent>
+
+         </Tabs>
       </FormProvider>
     </main>
   );
