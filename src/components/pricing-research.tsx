@@ -5,17 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { ExternalLink, Search, ImageIcon, Loader2, Globe } from 'lucide-react';
+import { ExternalLink, Search, Loader2, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 type PricingResearchProps = {
     onTextSearch: () => void;
-    onVisualSearch: () => void;
     isTextLoading: boolean;
-    isVisualLoading: boolean;
     textQueries: string[] | null;
-    visualQueries: string[] | null;
     suggestedPrice?: number;
 }
 
@@ -34,11 +31,8 @@ const getPlatformName = (url: string) => {
 
 export default function PricingResearch({ 
     onTextSearch, 
-    onVisualSearch, 
     isTextLoading, 
-    isVisualLoading, 
     textQueries, 
-    visualQueries,
     suggestedPrice
 }: PricingResearchProps) {
   const { control, getValues } = useFormContext();
@@ -89,23 +83,19 @@ export default function PricingResearch({
       </CardHeader>
       <CardContent className="space-y-6">
         
-        {(isTextLoading || isVisualLoading) && (
+        {isTextLoading && (
             <div className="flex items-center justify-center p-8">
                 <Loader2 className="mr-2 h-8 w-8 animate-spin" />
                 <p className="text-lg">AI is researching prices for you...</p>
             </div>
         )}
 
-        {!(isTextLoading || isVisualLoading) && (
+        {!isTextLoading && (
             <>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Button onClick={onTextSearch} disabled={isTextLoading} variant="secondary">
                     {isTextLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2" />}
                     Text Search
-                </Button>
-                <Button onClick={onVisualSearch} disabled={isVisualLoading} variant="secondary">
-                    {isVisualLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageIcon className="mr-2" />}
-                    Visual Search
                 </Button>
                 <Button onClick={handleGoogleSearch} variant="secondary">
                     <Globe className="mr-2" />
@@ -124,7 +114,6 @@ export default function PricingResearch({
 
                 <div className="space-y-4">
                     {renderSearchResults("Text Search Results", textQueries, true)}
-                    {renderSearchResults("Visual Search Results", visualQueries, false)}
                 </div>
 
                 <FormField

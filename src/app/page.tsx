@@ -8,7 +8,6 @@ import {
   analyzeImagesAction,
   draftGenerationAction,
   pricingResearchAction,
-  visualSearchAction,
 } from '@/app/actions';
 import { ArrowRight, CheckCircle2, FileText, Sparkles } from 'lucide-react';
 
@@ -33,12 +32,10 @@ export default function PoshmarkProListerPage() {
   const [loadingStates, setLoadingStates] = useState({
     analysis: false,
     textSearch: false,
-    visualSearch: false,
     draft: false,
   });
 
   const [textSearchResults, setTextSearchResults] = useState<PricingResearchOutput | null>(null);
-  const [visualSearchResults, setVisualSearchResults] = useState<string[]>([]);
   const [listingDraft, setListingDraft] = useState<DraftGenerationOutput | null>(null);
 
   const form = useForm<ListingFormValues>({
@@ -65,7 +62,6 @@ export default function PoshmarkProListerPage() {
     form.setValue('images', [...currentImages, ...newImages], { shouldValidate: true });
     setListingDraft(null);
     setTextSearchResults(null);
-    setVisualSearchResults([]);
   };
 
   const handleImageRemove = (index: number) => {
@@ -95,7 +91,6 @@ export default function PoshmarkProListerPage() {
     });
     setListingDraft(null);
     setTextSearchResults(null);
-    setVisualSearchResults([]);
   };
 
   const handleAnalyze = async () => {
@@ -162,29 +157,6 @@ export default function PoshmarkProListerPage() {
     }
   };
   
-  const handleVisualSearch = async () => {
-    const { images, condition } = form.getValues();
-    if (!images || images.length === 0) {
-      toast({
-        variant: 'destructive',
-        title: 'Missing Image',
-        description: 'Please upload at least one image for visual search.',
-      });
-      return;
-    }
-    setLoadingStates(prev => ({ ...prev, visualSearch: true }));
-    setVisualSearchResults([]);
-    try {
-      const result = await visualSearchAction({ photoDataUris: images, condition: condition || 'Used' });
-      setVisualSearchResults(result.searchResults);
-      toast({ title: 'Visual Search Complete' });
-    } catch (error) {
-       toast({ variant: 'destructive', title: 'Visual Search Failed', description: (error as Error).message });
-    } finally {
-      setLoadingStates(prev => ({ ...prev, visualSearch: false }));
-    }
-  };
-
   const handleDraftGeneration = async () => {
     const values = form.getValues();
     const { brand, model, style, color, gender, condition, disclaimer } = values;
@@ -226,7 +198,6 @@ export default function PoshmarkProListerPage() {
   const handleContinueToPricing = () => {
     setActiveTab('pricing');
     handleTextSearch();
-    handleVisualSearch();
   }
 
   const itemDetailsFooter = (
@@ -290,11 +261,8 @@ export default function PoshmarkProListerPage() {
                     <div className="space-y-4">
                         <PricingResearch 
                           onTextSearch={handleTextSearch}
-                          onVisualSearch={handleVisualSearch}
                           isTextLoading={loadingStates.textSearch}
-                          isVisualLoading={loadingStates.visualSearch}
                           textQueries={textSearchResults?.searchQueries || []}
-                          visualQueries={visualSearchResults}
                           suggestedPrice={textSearchResults?.suggestedPrice}
                         />
                          <div className="flex justify-end">

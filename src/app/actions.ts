@@ -10,8 +10,6 @@ import {
   performPricingResearch,
   PricingResearchInput,
   PricingResearchOutput,
-  performVisualSearch,
-  VisualSearchForPricingOutput,
 } from '@/ai/flows/pricing-research';
 import {
   performDraftGeneration,
@@ -39,31 +37,6 @@ export async function pricingResearchAction(
     return result;
   } catch (error) {
     console.error('Error in pricingResearchAction:', error);
-    throw error;
-  }
-}
-
-export async function visualSearchAction(input: {
-  photoDataUris: string[];
-  condition: string;
-}): Promise<VisualSearchForPricingOutput> {
-  const mainImage =
-    input.photoDataUris && input.photoDataUris.length > 0
-      ? input.photoDataUris[0]
-      : null;
-
-  if (!mainImage) {
-    throw new Error('No image available for visual search.');
-  }
-
-  try {
-    const result = await performVisualSearch({
-      photoDataUri: mainImage,
-      condition: input.condition,
-    });
-    return result;
-  } catch (error) {
-    console.error('Error in visualSearchAction:', error);
     throw error;
   }
 }
