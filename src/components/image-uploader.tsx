@@ -1,160 +1,227 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { useFormContext } from 'react-hook-form';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
-import { Card, CardContent } from '@/components/ui/card';
+import { useRef } from 'react';
+import { UploadCloud, Loader2, X, Sparkles } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { UploadCloud, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { useFormContext } from 'react-hook-form';
+import { FormField, FormControl, FormItem, FormMessage } from './ui/form';
 
 type ImageUploaderProps = {
-  onImagesChange: (images: string[]) => void;
+  onImageUpload: (imageDataUris: string[]) => void;
+  onAnalyze: () => void;
+  isLoading: boolean;
+  images: string[];
+  onClear: () => void;
 };
 
-export default function ImageUploader({ onImagesChange }: ImageUploaderProps) {
-  const [images, setImages] = useState<string[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
+export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, images, onClear }: ImageUploaderProps) {
+  const { control } = useFormContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { formState: { errors } } = useFormContext();
+  const { toast } = useToast();
+  const placeholder = PlaceHolderImages.find(p => p.id === 'uploader-placeholder');
+  const hasImages = images.length > 0;
 
-  const placeholderImage = PlaceHolderImages.find(p => p.id === 'uploader-placeholder');
-
-  const handleFiles = useCallback((files: FileList) => {
-    const fileArray = Array.from(files);
-    const newImages: string[] = [];
-    let processedCount = 0;
-
-    if (fileArray.length === 0) return;
-
-    fileArray.forEach(file => {
+  const resizeAndToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        if (typeof e.target?.result === 'string') {
-          newImages.push(e.target.result);
-        }
-        processedCount++;
-        if (processedCount === fileArray.length) {
-          const allImages = [...images, ...newImages];
-          setImages(allImages);
-          onImagesChange(allImages);
-        }
-      };
       reader.readAsDataURL(file);
-    });
-  }, [images, onImagesChange]);
+      reader.onload = (event) => {
+        const img = document.createElement('img');
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1024;
+          const MAX_HEIGHT = 1024;
+          let width = img.width;
+          let height = img.height;
 
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            return reject(new Error('Could not get canvas context'));
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.9));
+        };
+        img.onerror = reject;
+      };
+      reader.onerror = reject;
+    });
+
+  const processFiles = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const imageFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+
+    if (imageFiles.length === 0) {
+      toast({
+          variant: "destructive",
+          title: "No Images Selected",
+          description: "Please select one or more image files.",
+      });
+      return;
+    }
+    
+    try {
+      const resizingPromises = imageFiles.map(resizeAndToBase64);
+      const base64Uris = await Promise.all(resizingPromises);
+      onImageUpload(base64Uris); 
+    } catch (error) {
+      toast({
+          variant: "destructive",
+          title: "Error Reading Files",
+          description: "Could not process the selected images.",
+      });
+    }
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    await processFiles(e.target.files);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
   };
 
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
+  const handleAreaClick = () => {
+    if (!hasImages) {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      handleFiles(e.dataTransfer.files);
-      e.dataTransfer.clearData();
-    }
   };
   
-  const handleClearImages = () => {
-    setImages([]);
-    onImagesChange([]);
-    if(fileInputRef.current) {
-        fileInputRef.current.value = "";
-    }
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    await processFiles(e.dataTransfer.files);
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-semibold font-headline tracking-tight">Item Images</h2>
-      {images.length > 0 ? (
-        <div className="space-y-4">
-            <Carousel className="w-full">
-              <CarouselContent>
-                {images.map((src, index) => (
-                  <CarouselItem key={index}>
-                    <div className="p-1">
-                      <Card>
-                        <CardContent className="flex aspect-video items-center justify-center p-0 relative overflow-hidden rounded-lg">
-                           <Image src={src} alt={`Uploaded image ${index + 1}`} fill style={{ objectFit: 'contain' }} />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-             <div className="flex justify-center">
-                <Button variant="destructive" onClick={handleClearImages}><X className="mr-2 h-4 w-4" /> Clear Images</Button>
-            </div>
-        </div>
-      ) : (
-        <div
-          className={cn(
-            'relative flex flex-col items-center justify-center w-full p-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors',
-            isDragging ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50',
-            errors.images ? 'border-destructive' : ''
-          )}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => e.target.files && handleFiles(e.target.files)}
-          />
-          <div className="absolute inset-0">
-            {placeholderImage && (
-                <Image
-                    src={placeholderImage.imageUrl}
-                    alt={placeholderImage.description}
-                    data-ai-hint={placeholderImage.imageHint}
-                    fill
-                    className="object-cover opacity-10 rounded-lg"
-                />
+    <Card className="h-full flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Item Images</CardTitle>
+        {hasImages && !isLoading && (
+          <Button variant="ghost" size="sm" onClick={onClear}>
+            <X className="mr-2 h-4 w-4" />
+            Clear
+          </Button>
+        )}
+      </CardHeader>
+      <CardContent className="flex-1 min-h-[300px]">
+        <FormField
+            control={control}
+            name="images"
+            render={() => (
+                <FormItem>
+                    <FormControl>
+                        <div
+                        className={cn(
+                            "relative w-full h-full min-h-[300px] rounded-lg flex flex-col justify-center items-center text-center p-4 transition-colors group", 
+                            !hasImages && "border-2 border-dashed border-muted-foreground/50 cursor-pointer hover:border-primary"
+                        )}
+                        onClick={handleAreaClick}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                        >
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            accept="image/*"
+                            multiple
+                        />
+                        {hasImages ? (
+                            <Carousel className="w-full h-full max-h-[400px]">
+                            <CarouselContent>
+                                {images.map((image, index) => (
+                                <CarouselItem key={index}>
+                                    <div className="relative w-full h-full aspect-square">
+                                    <Image
+                                        src={image}
+                                        alt={`Product Preview ${index + 1}`}
+                                        fill
+                                        className="object-contain rounded-md"
+                                    />
+                                    </div>
+                                </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            {images.length > 1 && (
+                                <>
+                                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
+                                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
+                                </>
+                            )}
+                            </Carousel>
+                        ) : (
+                            <>
+                            {placeholder && 
+                            <Image
+                                src={placeholder.imageUrl}
+                                alt={placeholder.description}
+                                data-ai-hint={placeholder.imageHint}
+                                fill
+                                className="absolute inset-0 w-full h-full object-cover rounded-md opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none"
+                            />
+                            }
+                            <div className="relative z-10 flex flex-col items-center pointer-events-none">
+                                <UploadCloud className="w-12 h-12 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <p className="mt-4 font-semibold text-foreground">Click or drag &amp; drop to upload</p>
+                                <p className="text-sm text-muted-foreground">PNG, JPG, or WEBP (multiple allowed)</p>
+                            </div>
+                            </>
+                        )}
+
+                        {isLoading && (
+                            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col justify-center items-center rounded-lg z-20">
+                            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                            <p className="mt-4 text-lg font-medium text-foreground">Analyzing images...</p>
+                            </div>
+                        )}
+                        </div>
+                    </FormControl>
+                    <FormMessage className="pt-2" />
+                </FormItem>
             )}
-          </div>
-          <div className="relative text-center z-10">
-            <UploadCloud className="mx-auto h-12 w-12 text-muted-foreground" />
-            <p className="mt-4 font-semibold text-foreground">Drag & drop images here, or click to select</p>
-            <p className="text-sm text-muted-foreground">Upload one or more photos of your item.</p>
-            {errors.images && (
-                <p className="text-sm text-destructive mt-2">{(errors.images.message as string)}</p>
-            )}
-          </div>
-        </div>
+        />
+      </CardContent>
+      
+      {hasImages && (
+        <CardFooter className="pt-2">
+            <Button 
+                onClick={onAnalyze} 
+                disabled={isLoading} 
+                className="w-full text-lg h-12"
+            >
+                {isLoading ? (
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                ) : (
+                    <Sparkles className="mr-2 h-5 w-5" />
+                )}
+                Analyze Images with AI
+            </Button>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   );
 }
