@@ -4,7 +4,6 @@ import Image from 'next/image';
 import { X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 type ImagePreviewProps = {
   images: string[];
@@ -31,32 +30,23 @@ export default function ImagePreview({ images, onClear, showClearButton = true }
         )}
       </CardHeader>
       <CardContent>
-        <Carousel className="w-full">
-          <CarouselContent>
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
             {images.map((image, index) => (
-            <CarouselItem key={index} className="relative basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
-                <div className="relative w-full aspect-square" draggable onDragStart={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+            <div key={index} className="relative aspect-square">
+                <div className="relative w-full h-full" draggable>
                   <Image
                       src={image}
                       alt={`Product Preview ${index + 1}`}
                       fill
                       className="object-contain rounded-md"
-                      draggable
                       onDragStart={(e) => {
                         e.dataTransfer.setData('text/plain', image);
                       }}
                   />
                 </div>
-            </CarouselItem>
+            </div>
             ))}
-          </CarouselContent>
-          {images.length > 5 && (
-            <>
-            <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
-            <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
-            </>
-          )}
-        </Carousel>
+        </div>
       </CardContent>
     </Card>
   );
