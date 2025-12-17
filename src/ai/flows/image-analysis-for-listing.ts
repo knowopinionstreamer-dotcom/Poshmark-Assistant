@@ -39,16 +39,24 @@ const imageAnalysisPrompt = ai.definePrompt({
   name: 'imageAnalysisPrompt',
   input: { schema: ImageAnalysisForListingInputSchema },
   output: { schema: ImageAnalysisForListingOutputSchema },
-  prompt: `You are an AI assistant designed to analyze images of clothing items and extract relevant details for listing them on resale platforms like Poshmark.
+  prompt: `You are an AI assistant designed to analyze images of clothing items and extract relevant details for listing them on resale platforms like Poshmark. You are an expert at identifying details from photos.
 
-  Analyze the following images to identify the brand, model, style, color, gender, and condition of the item. Also, create a detailed description of the item, highlighting its key features and any notable details.
-  Include all images provided when generating the description. Use information found on the front, back and tags of the item to create the description.
+  Your task is to meticulously analyze the following images. Examine every part of the item, including the front, back, interior, and any tags (brand tags, care labels, size tags).
+  From these images, extract the following information:
+  - **Brand:** The brand name of the item.
+  - **Model:** The specific model or name of the item, if available.
+  - **Style:** The type or style of the item (e.g., "sneaker", "duffel bag", "t-shirt").
+  - **Color:** The primary color or colors of the item.
+  - **Gender:** The target gender (e.g., "Womens", "Mens", "Unisex", "Kids").
+  - **Condition:** The visual condition of the item (e.g., "New with tags", "Excellent used condition", "Good used condition").
+  - **Description:** A detailed paragraph describing the item. Mention key features, materials (like cotton, polyester, leather), and any unique details you can see, such as where it was made if visible on a tag. Be descriptive and thorough.
 
   Images:
   {{#each photoDataUris}}
   {{media url=this}}
   {{/each}}
   `,
+  model: 'googleai/gemini-2.5-pro'
 });
 
 const imageAnalysisForListingFlow = ai.defineFlow(
