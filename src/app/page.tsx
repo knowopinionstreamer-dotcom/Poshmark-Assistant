@@ -166,18 +166,9 @@ export default function PoshmarkProListerPage() {
 
   const handleDraftGeneration = async () => {
     const values = form.getValues();
-    const { brand, model, style, color, gender, condition, targetPrice } = values;
+    const { brand, model, style, color, gender, condition } = values;
 
-    if (!targetPrice) {
-      toast({
-        variant: 'destructive',
-        title: 'Price not set',
-        description: 'Please set a target price before generating a draft.',
-      });
-      return;
-    }
-
-    const requiredFields = { brand, model, style, color, gender, condition, targetPrice };
+    const requiredFields = { brand, model, style, color, gender, condition };
 
     for (const [key, value] of Object.entries(requiredFields)) {
         if (!value) {
@@ -199,7 +190,6 @@ export default function PoshmarkProListerPage() {
         color: color!,
         gender: gender!,
         condition: condition!,
-        targetPrice: targetPrice!
       });
       form.setValue('title', result.title);
       const originalDescription = form.getValues('description') || '';
