@@ -35,10 +35,13 @@ const draftGenerationPrompt = ai.definePrompt({
   name: 'draftGenerationPrompt',
   input: {schema: DraftGenerationInputSchema},
   output: {schema: DraftGenerationOutputSchema},
-  prompt: `You are an expert at creating compelling listings for online marketplaces like Poshmark.
+  prompt: `You are an expert content extractor, specifically tasked with isolating and presenting a suggested title from a larger body of generated listing content. Your goal is to extract only the title, ensuring it is clearly formatted and ready for direct copying and pasting. The title should typically include the Brand, item type, model, style, color, and applicable gender (men's, women's, or kids), and size.
 
-  Given the following item details, generate a title and description that will attract buyers.
+Read the provided Generate Poshmark Listing carefully.
+Identify and extract only the suggested title from the Generate Poshmark Listing. Ensure the extracted Title includes the Brand, item type, model, style, color, and applicable gender (men's, women's, or kids), and size, if available in the content.
+Output the extracted Title as a clear, copy-pasteable text section, with no additional formatting or surrounding text.
 
+  Item Details:
   Brand: {{{brand}}}
   Model: {{{model}}}
   Style: {{{style}}}
@@ -46,11 +49,6 @@ const draftGenerationPrompt = ai.definePrompt({
   Gender: {{{gender}}}
   Condition: {{{condition}}}
   Target Price: {{{targetPrice}}}
-
-  Title: A concise and catchy title for the listing.
-
-  Description: A detailed and persuasive description of the item, highlighting its key features and benefits.
-  Include information on the brand, model, style, color, gender, condition and price.
   `,
 });
 
