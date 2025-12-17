@@ -5,7 +5,6 @@ import { useRef } from 'react';
 import { UploadCloud, Loader2, X, Sparkles, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
@@ -102,9 +101,7 @@ export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, ima
   };
 
   const handleAreaClick = () => {
-    if (!hasImages) {
-      fileInputRef.current?.click();
-    }
+    fileInputRef.current?.click();
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -136,8 +133,7 @@ export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, ima
                     <FormControl>
                         <div
                         className={cn(
-                            "relative w-full h-full min-h-[300px] rounded-lg flex flex-col justify-center items-center text-center p-4 transition-colors group", 
-                            !hasImages && "border-2 border-dashed border-muted-foreground/50 cursor-pointer hover:border-primary"
+                            "relative w-full h-full min-h-[200px] rounded-lg flex flex-col justify-center items-center text-center p-4 transition-colors group border-2 border-dashed border-muted-foreground/50 cursor-pointer hover:border-primary"
                         )}
                         onClick={handleAreaClick}
                         onDragOver={handleDragOver}
@@ -151,60 +147,13 @@ export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, ima
                             accept="image/*"
                             multiple
                         />
-                        {hasImages ? (
-                            <Carousel className="w-full h-full max-h-[400px]">
-                            <CarouselContent>
-                                {images.map((image, index) => (
-                                <CarouselItem key={index} className="relative group/item">
-                                    <div className="relative w-full h-full aspect-square">
-                                      <Image
-                                          src={image}
-                                          alt={`Product Preview ${index + 1}`}
-                                          fill
-                                          className="object-contain rounded-md"
-                                      />
-                                      <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover/item:opacity-100 transition-opacity"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          onImageRemove(index);
-                                        }}
-                                      >
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">Remove image</span>
-                                      </Button>
-                                    </div>
-                                </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            {images.length > 1 && (
-                                <>
-                                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2" />
-                                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2" />
-                                </>
-                            )}
-                            </Carousel>
-                        ) : (
-                            <>
-                            {placeholder && 
-                            <Image
-                                src={placeholder.imageUrl}
-                                alt={placeholder.description}
-                                data-ai-hint={placeholder.imageHint}
-                                fill
-                                className="absolute inset-0 w-full h-full object-cover rounded-md opacity-20 group-hover:opacity-30 transition-opacity pointer-events-none"
-                            />
-                            }
-                            <div className="relative z-10 flex flex-col items-center pointer-events-none">
-                                <UploadCloud className="w-12 h-12 text-muted-foreground group-hover:text-primary transition-colors" />
-                                <p className="mt-4 font-semibold text-foreground">Click or drag &amp; drop to upload</p>
-                                <p className="text-sm text-muted-foreground">PNG, JPG, or WEBP (multiple allowed)</p>
-                            </div>
-                            </>
-                        )}
-
+                        
+                        <div className="relative z-10 flex flex-col items-center pointer-events-none">
+                            <UploadCloud className="w-12 h-12 text-muted-foreground group-hover:text-primary transition-colors" />
+                            <p className="mt-4 font-semibold text-foreground">Click or drag & drop to upload</p>
+                            <p className="text-sm text-muted-foreground">Add more images anytime</p>
+                        </div>
+                        
                         {isLoading && (
                             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col justify-center items-center rounded-lg z-20">
                             <Loader2 className="w-10 h-10 animate-spin text-primary" />
@@ -217,6 +166,32 @@ export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, ima
                 </FormItem>
             )}
         />
+        {hasImages && (
+            <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                {images.map((image, index) => (
+                    <div key={index} className="relative group/item aspect-square">
+                        <Image
+                            src={image}
+                            alt={`Product Preview ${index + 1}`}
+                            fill
+                            className="object-contain rounded-md border"
+                        />
+                        <Button
+                            variant="destructive"
+                            size="icon"
+                            className="absolute -top-2 -right-2 h-6 w-6 rounded-full opacity-0 group-hover/item:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onImageRemove(index);
+                            }}
+                        >
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Remove image</span>
+                        </Button>
+                    </div>
+                ))}
+            </div>
+        )}
       </CardContent>
       
       {hasImages && (
