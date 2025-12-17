@@ -50,7 +50,7 @@ Output the extracted Title as a clear, copy-pasteable text section, with no addi
   - Style: {{{style}}}
   - Color: {{{color}}}
   - Gender: {{{gender}}}
-  - Condition: {{{condition}}}
+  - Condition: Based on the value of {{{condition}}}, display "NEW" if it contains "new", otherwise display "Gently Used".
 
   Based on these details, generate the title and description.
   `,
