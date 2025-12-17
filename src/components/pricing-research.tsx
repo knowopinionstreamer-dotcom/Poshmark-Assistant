@@ -7,6 +7,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { ExternalLink, Search, ImageIcon, Loader2, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 type PricingResearchProps = {
     onTextSearch: () => void;
@@ -15,6 +16,7 @@ type PricingResearchProps = {
     isVisualLoading: boolean;
     textQueries: string[] | null;
     visualQueries: string[] | null;
+    suggestedPrice?: number;
 }
 
 const getPlatformName = (url: string) => {
@@ -36,7 +38,8 @@ export default function PricingResearch({
     isTextLoading, 
     isVisualLoading, 
     textQueries, 
-    visualQueries 
+    visualQueries,
+    suggestedPrice
 }: PricingResearchProps) {
   const { control, getValues } = useFormContext();
   const { toast } = useToast();
@@ -85,39 +88,60 @@ export default function PricingResearch({
         <CardDescription>Research pricing on popular marketplaces and set your target price.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Button onClick={onTextSearch} disabled={isTextLoading} variant="secondary">
-            {isTextLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2" />}
-            Text Search
-          </Button>
-          <Button onClick={onVisualSearch} disabled={isVisualLoading} variant="secondary">
-            {isVisualLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageIcon className="mr-2" />}
-            Visual Search
-          </Button>
-           <Button onClick={handleGoogleSearch} variant="secondary">
-            <Globe className="mr-2" />
-            Google Search
-          </Button>
-        </div>
         
-        <div className="space-y-4">
-            {renderSearchResults("Text Search Results", textQueries, true)}
-            {renderSearchResults("Visual Search Results", visualQueries, false)}
-        </div>
+        {(isTextLoading || isVisualLoading) && (
+            <div className="flex items-center justify-center p-8">
+                <Loader2 className="mr-2 h-8 w-8 animate-spin" />
+                <p className="text-lg">AI is researching prices for you...</p>
+            </div>
+        )}
 
-        <FormField
-          control={control}
-          name="targetPrice"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Target Price ($)</FormLabel>
-              <FormControl>
-                <Input type="number" placeholder="e.g. 49.99" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!(isTextLoading || isVisualLoading) && (
+            <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Button onClick={onTextSearch} disabled={isTextLoading} variant="secondary">
+                    {isTextLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2" />}
+                    Text Search
+                </Button>
+                <Button onClick={onVisualSearch} disabled={isVisualLoading} variant="secondary">
+                    {isVisualLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageIcon className="mr-2" />}
+                    Visual Search
+                </Button>
+                <Button onClick={handleGoogleSearch} variant="secondary">
+                    <Globe className="mr-2" />
+                    Google Search
+                </Button>
+                </div>
+                
+                {suggestedPrice && (
+                    <Alert>
+                        <AlertTitle className="font-bold">AI Suggested Price</AlertTitle>
+                        <AlertDescription className="text-2xl font-bold text-primary">
+                            ${suggestedPrice.toFixed(2)}
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                <div className="space-y-4">
+                    {renderSearchResults("Text Search Results", textQueries, true)}
+                    {renderSearchResults("Visual Search Results", visualQueries, false)}
+                </div>
+
+                <FormField
+                control={control}
+                name="targetPrice"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Your Target Price ($)</FormLabel>
+                    <FormControl>
+                        <Input type="number" placeholder="e.g. 49.99" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </>
+        )}
       </CardContent>
     </Card>
   );

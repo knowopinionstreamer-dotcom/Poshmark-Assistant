@@ -23,6 +23,7 @@ export type PricingResearchInput = z.infer<typeof PricingResearchInputSchema>;
 
 const PricingResearchOutputSchema = z.object({
   searchQueries: z.array(z.string()).describe('An array of search URLs for eBay, Poshmark, and Mercari/Amazon.'),
+  suggestedPrice: z.number().optional().describe('The suggested price for the item based on research.'),
 });
 export type PricingResearchOutput = z.infer<typeof PricingResearchOutputSchema>;
 
@@ -50,7 +51,9 @@ const pricingResearchPrompt = ai.definePrompt({
   name: 'pricingResearchPrompt',
   input: {schema: PricingResearchInputSchema},
   output: {schema: PricingResearchOutputSchema},
-  prompt: `You are an expert reseller assistant. Your task is to generate search URLs for various marketplaces to help a user research the price of an item.
+  prompt: `You are an expert reseller assistant. Your tasks are to:
+  1. Generate search URLs for various marketplaces to help a user research the price of an item.
+  2. Suggest a competitive listing price based on the provided item details.
 
   You will be given the item's brand, model, size, and condition.
 
@@ -60,18 +63,16 @@ const pricingResearchPrompt = ai.definePrompt({
   - Size: {{{size}}}
   - Condition: {{{condition}}}
 
-  Instructions:
+  Instructions for Search URLs:
   1. Create a search query string that includes the brand, model, and size (if available).
   2. Based on the item's condition, generate search URLs for the appropriate platforms:
-     - If the condition is 'New with tags', 'New', or similar, generate URLs for:
-       - Poshmark
-       - eBay
-       - Amazon
-     - If the condition is 'Used', 'Excellent used condition', or similar, generate URLs for:
-       - Poshmark
-       - eBay
-       - Mercari
+     - If the condition is 'New with tags', 'New', or similar, generate URLs for Poshmark, eBay, and Amazon.
+     - If the condition is 'Used', 'Excellent used condition', or similar, generate URLs for Poshmark, eBay, and Mercari.
   3. Format the output as a JSON object containing an array of these URLs.
+
+  Instructions for Suggested Price:
+  - Based on your knowledge of online marketplaces and the item details, determine a realistic and competitive selling price.
+  - The price should be a number, without any currency symbols.
 
   Example query: "Nike Air Max 90 10.5"
   Example URL for Poshmark: "https://poshmark.com/search?query=Nike+Air+Max+90+10.5"

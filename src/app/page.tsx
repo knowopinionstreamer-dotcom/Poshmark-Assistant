@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,7 @@ import ListingDraft from '@/components/listing-draft';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { listingFormSchema, type ListingFormValues } from '@/app/schema';
 import type { DraftGenerationOutput } from '@/ai/flows/draft-generation';
+import type { PricingResearchOutput } from '@/ai/flows/pricing-research';
 import ImagePreview from '@/components/image-preview';
 
 const defaultDisclaimer = `\n\n**BUYER INFORMATION (Please Read):**\n- Photos are of actual sale item and accurately represent its condition. Any marks or imperfections should be in the photos.\n- If you have any questions or concerns or want more photos, please ask BEFORE purchase.\n- The items color may be slightly different due to your screen settings and lighting.\n- Everything comes from a smoke-free, pet-free environment.\n- All reasonable offers considered. Bundle 2 or more items for discounted Price and Shipping.\n- Item is Cross-listed\n- Thanks for looking! Check out my other listings for more great items and prices!!!`;
@@ -36,7 +37,7 @@ export default function PoshmarkProListerPage() {
     draft: false,
   });
 
-  const [textSearchResults, setTextSearchResults] = useState<string[]>([]);
+  const [textSearchResults, setTextSearchResults] = useState<PricingResearchOutput | null>(null);
   const [visualSearchResults, setVisualSearchResults] = useState<string[]>([]);
   const [listingDraft, setListingDraft] = useState<DraftGenerationOutput | null>(null);
 
@@ -63,7 +64,7 @@ export default function PoshmarkProListerPage() {
     const currentImages = form.getValues('images');
     form.setValue('images', [...currentImages, ...newImages], { shouldValidate: true });
     setListingDraft(null);
-    setTextSearchResults([]);
+    setTextSearchResults(null);
     setVisualSearchResults([]);
   };
 
@@ -93,7 +94,7 @@ export default function PoshmarkProListerPage() {
       disclaimer: defaultDisclaimer,
     });
     setListingDraft(null);
-    setTextSearchResults([]);
+    setTextSearchResults(null);
     setVisualSearchResults([]);
   };
 
@@ -146,10 +147,13 @@ export default function PoshmarkProListerPage() {
       return;
     }
     setLoadingStates(prev => ({ ...prev, textSearch: true }));
-    setTextSearchResults([]);
+    setTextSearchResults(null);
     try {
       const result = await pricingResearchAction({ brand, model, size, condition: condition || 'Used' });
-      setTextSearchResults(result.searchQueries);
+      setTextSearchResults(result);
+      if (result.suggestedPrice) {
+        form.setValue('targetPrice', result.suggestedPrice);
+      }
       toast({ title: 'Text Search Complete' });
     } catch (error) {
       toast({ variant: 'destructive', title: 'Text Search Failed', description: (error as Error).message });
@@ -219,6 +223,12 @@ export default function PoshmarkProListerPage() {
     }
   };
 
+  const handleContinueToPricing = () => {
+    setActiveTab('pricing');
+    handleTextSearch();
+    handleVisualSearch();
+  }
+
   const itemDetailsFooter = (
      <>
         <Button 
@@ -232,7 +242,7 @@ export default function PoshmarkProListerPage() {
 
         <Button 
             variant="secondary"
-            onClick={() => setActiveTab('pricing')}
+            onClick={handleContinueToPricing}
             className="flex-1 sm:flex-none"
         >
             Continue to AI Price Comparison
@@ -283,8 +293,9 @@ export default function PoshmarkProListerPage() {
                           onVisualSearch={handleVisualSearch}
                           isTextLoading={loadingStates.textSearch}
                           isVisualLoading={loadingStates.visualSearch}
-                          textQueries={textSearchResults}
+                          textQueries={textSearchResults?.searchQueries || []}
                           visualQueries={visualSearchResults}
+                          suggestedPrice={textSearchResults?.suggestedPrice}
                         />
                          <div className="flex justify-end">
                             <Button onClick={() => setActiveTab("draft")} size="lg" variant="secondary" className="w-full sm:w-auto">
