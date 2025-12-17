@@ -27,7 +27,7 @@ export async function analyzeImagesAction(
     return result;
   } catch (error) {
     console.error('Error in analyzeImagesAction:', error);
-    throw new Error('Failed to analyze images.');
+    throw error;
   }
 }
 
@@ -39,7 +39,7 @@ export async function pricingResearchAction(
     return result;
   } catch (error) {
     console.error('Error in pricingResearchAction:', error);
-    throw new Error('Failed to perform pricing research.');
+    throw error;
   }
 }
 
@@ -64,7 +64,7 @@ export async function visualSearchAction(input: {
     return result;
   } catch (error) {
     console.error('Error in visualSearchAction:', error);
-    throw new Error('Failed to perform visual search.');
+    throw error;
   }
 }
 
@@ -76,6 +76,6 @@ export async function draftGenerationAction(
     return result;
   } catch (error) {
     console.error('Error in draftGenerationAction:', error);
-    throw new Error('Failed to generate draft.');
+    throw error;
   }
 }
