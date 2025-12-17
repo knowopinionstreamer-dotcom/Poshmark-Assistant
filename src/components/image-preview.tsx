@@ -35,12 +35,16 @@ export default function ImagePreview({ images, onClear, showClearButton = true }
           <CarouselContent>
             {images.map((image, index) => (
             <CarouselItem key={index} className="relative basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5">
-                <div className="relative w-full aspect-square">
+                <div className="relative w-full aspect-square" draggable onDragStart={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                   <Image
                       src={image}
                       alt={`Product Preview ${index + 1}`}
                       fill
                       className="object-contain rounded-md"
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('text/plain', image);
+                      }}
                   />
                 </div>
             </CarouselItem>
