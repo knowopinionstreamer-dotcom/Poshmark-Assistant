@@ -44,12 +44,3 @@ next-env.d.ts
 firebase-debug.log
 firestore-debug.log
 
-# Python System Files
-venv/
-poshmark_bot/venv/
-__pycache__/
-*.pyc
-
-# Photos
-poshmark_bot/photos/*
-poshmark_bot/processed_listing/*
