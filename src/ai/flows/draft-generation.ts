@@ -35,20 +35,20 @@ const draftGenerationPrompt = ai.definePrompt({
   name: 'draftGenerationPrompt',
   input: {schema: DraftGenerationInputSchema},
   output: {schema: DraftGenerationOutputSchema},
-  prompt: `You are an expert content extractor, specifically tasked with isolating and presenting a suggested title from a larger body of generated listing content. Your goal is to extract only the title, ensuring it is clearly formatted and ready for direct copying and pasting. The title should typically include the Brand, item type, model, style, color, and applicable gender (men's, women's, or kids), and size.
+  prompt: `You are an expert Poshmark listing content creator. Your tasks are to:
+1.  **Generate a Title**: Create a concise, catchy title. It should include the Brand, item type, model, style, color, and applicable gender (men's, women's, or kids), and size, if available.
+2.  **Generate a Description**: Create a detailed description of the item including key features and condition. You must also include a disclaimer formatted as a list. The total length of the description and disclaimer combined must be less than 1000 characters.
 
-Read the provided Generate Poshmark Listing carefully.
-Identify and extract only the suggested title from the Generate Poshmark Listing. Ensure the extracted Title includes the Brand, item type, model, style, color, and applicable gender (men's, women's, or kids), and size, if available in the content.
-Output the extracted Title as a clear, copy-pasteable text section, with no additional formatting or surrounding text.
+  **Item Details:**
+  - Brand: {{{brand}}}
+  - Model: {{{model}}}
+  - Style: {{{style}}}
+  - Color: {{{color}}}
+  - Gender: {{{gender}}}
+  - Condition: {{{condition}}}
+  - Target Price: \${{{targetPrice}}}
 
-  Item Details:
-  Brand: {{{brand}}}
-  Model: {{{model}}}
-  Style: {{{style}}}
-  Color: {{{color}}}
-  Gender: {{{gender}}}
-  Condition: {{{condition}}}
-  Target Price: {{{targetPrice}}}
+  Based on these details, generate the title and description.
   `,
 });
 
