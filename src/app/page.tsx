@@ -224,7 +224,7 @@ export default function PoshmarkProListerPage() {
             onClick={() => setActiveTab('draft')}
             className="flex-1 sm:flex-none"
         >
-            <FileText className="mr-2 h-4 w-4 text-slate-500" />
+            <FileText className="mr-2 h-4 w-4" />
             Skip Pricing & Generate Listing
         </Button>
 

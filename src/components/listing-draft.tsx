@@ -15,9 +15,7 @@ type ListingDraftProps = {
 };
 
 export default function ListingDraft({ onGenerateDraft, isLoading }: ListingDraftProps) {
-  const { control, watch } = useFormContext();
-
-  const targetPrice = watch('targetPrice');
+  const { control } = useFormContext();
 
   return (
     <Card>
@@ -26,7 +24,7 @@ export default function ListingDraft({ onGenerateDraft, isLoading }: ListingDraf
         <CardDescription>Generate a compelling title and description for your listing.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Button onClick={onGenerateDraft} disabled={isLoading || !targetPrice} className="w-full">
+        <Button onClick={onGenerateDraft} disabled={isLoading} className="w-full">
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2" />}
           Generate Listing Draft
         </Button>
