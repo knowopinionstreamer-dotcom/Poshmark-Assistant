@@ -11,6 +11,7 @@ export const listingFormSchema = z.object({
   targetPrice: z.coerce.number({invalid_type_error: "Please enter a valid price."}).positive("Price must be a positive number.").optional(),
   title: z.string().optional(),
   description: z.string().optional(),
+  disclaimer: z.string().optional(),
 });
 
 export type ListingFormValues = z.infer<typeof listingFormSchema>;

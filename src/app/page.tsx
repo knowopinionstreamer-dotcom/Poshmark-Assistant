@@ -23,6 +23,8 @@ import { listingFormSchema, type ListingFormValues } from '@/app/schema';
 import type { DraftGenerationOutput } from '@/ai/flows/draft-generation';
 import ImagePreview from '@/components/image-preview';
 
+const defaultDisclaimer = `\n\n**BUYER INFORMATION (Please Read):**\n- Photos are of actual sale item and accurately represent its condition. Any marks or imperfections should be in the photos.\n- If you have any questions or concerns or want more photos, please ask BEFORE purchase.\n- The items color may be slightly different due to your screen settings and lighting.\n- Everything comes from a smoke-free, pet-free environment.\n- All reasonable offers considered. Bundle 2 or more items for discounted Price and Shipping.\n- Item is Cross-listed\n- Thanks for looking! Check out my other listings for more great items and prices!!!`;
+
 export default function PoshmarkProListerPage() {
   const [activeTab, setActiveTab] = useState('upload');
   const { toast } = useToast();
@@ -50,6 +52,7 @@ export default function PoshmarkProListerPage() {
       condition: 'Used',
       title: '',
       description: '',
+      disclaimer: defaultDisclaimer,
     },
   });
 
@@ -85,6 +88,7 @@ export default function PoshmarkProListerPage() {
       title: '',
       description: '',
       targetPrice: undefined,
+      disclaimer: defaultDisclaimer,
     });
     setListingDraft(null);
     setTextSearchResults([]);
@@ -177,7 +181,7 @@ export default function PoshmarkProListerPage() {
 
   const handleDraftGeneration = async () => {
     const values = form.getValues();
-    const { brand, model, style, color, gender, condition } = values;
+    const { brand, model, style, color, gender, condition, disclaimer } = values;
 
     const requiredFields = { brand, model, style, color, gender, condition };
 
@@ -203,10 +207,7 @@ export default function PoshmarkProListerPage() {
         condition: condition!,
       });
       form.setValue('title', result.title);
-      
-      const disclaimer = `\n\n**BUYER INFORMATION (Please Read):**\n- Photos are of actual sale item and accurately represent its condition. Any marks or imperfections should be in the photos.\n- If you have any questions or concerns or want more photos, please ask BEFORE purchase.\n- The items color may be slightly different due to your screen settings and lighting.\n- Everything comes from a smoke-free, pet-free environment.\n- All reasonable offers considered. Bundle 2 or more items for discounted Price and Shipping.\n- Item is Cross-listed\n- Thanks for looking! Check out my other listings for more great items and prices!!!`;
-      
-      form.setValue('description', result.description + disclaimer);
+      form.setValue('description', result.description + (disclaimer || ''));
       setListingDraft(result);
       toast({ title: 'Draft Generated', description: 'Your listing title and description are ready.' });
     } catch (error) {

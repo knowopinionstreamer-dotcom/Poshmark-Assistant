@@ -7,6 +7,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { Separator } from './ui/separator';
 
 type ListingDraftProps = {
     onGenerateDraft: () => void;
@@ -52,6 +53,20 @@ export default function ListingDraft({ onGenerateDraft, isLoading }: ListingDraf
                 <FormLabel>Description</FormLabel>
                 <FormControl>
                   <Textarea placeholder="AI-generated description will appear here" {...field} rows={10} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Separator />
+           <FormField
+            control={control}
+            name="disclaimer"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Disclaimer</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Your default disclaimer. Edit here to change it for this and future listings." {...field} rows={8} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
