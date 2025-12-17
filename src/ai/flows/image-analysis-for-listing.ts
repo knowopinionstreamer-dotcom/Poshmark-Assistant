@@ -56,7 +56,7 @@ const imageAnalysisPrompt = ai.definePrompt({
   {{media url=this}}
   {{/each}}
   `,
-  model: 'googleai/gemini-2.5-flash'
+  model: 'googleai/gemini-2.5-flash-preview'
 });
 
 const imageAnalysisForListingFlow = ai.defineFlow(
