@@ -62,6 +62,16 @@ export default function PoshmarkProListerPage() {
     setVisualSearchResults([]);
   };
 
+  const handleImageRemove = (index: number) => {
+    const currentImages = form.getValues('images');
+    const updatedImages = currentImages.filter((_, i) => i !== index);
+    form.setValue('images', updatedImages, { shouldValidate: true });
+    toast({
+      title: 'Image Removed',
+      description: `Image ${index + 1} has been removed.`,
+    });
+  };
+
   const handleClearImages = () => {
     form.reset({
       images: [],
@@ -245,6 +255,7 @@ export default function PoshmarkProListerPage() {
                 <ImageUploader
                     images={images}
                     onImageUpload={handleImageUpload}
+                    onImageRemove={handleImageRemove}
                     onClear={handleClearImages}
                     onAnalyze={handleAnalyze}
                     isLoading={loadingStates.analysis}
@@ -257,6 +268,7 @@ export default function PoshmarkProListerPage() {
                         <ImageUploader
                             images={images}
                             onImageUpload={handleImageUpload}
+                            onImageRemove={handleImageRemove}
                             onClear={handleClearImages}
                             onAnalyze={handleAnalyze}
                             isLoading={loadingStates.analysis}
@@ -274,6 +286,7 @@ export default function PoshmarkProListerPage() {
                         <ImageUploader
                             images={images}
                             onImageUpload={handleImageUpload}
+                            onImageRemove={handleImageRemove}
                             onClear={handleClearImages}
                             onAnalyze={handleAnalyze}
                             isLoading={loadingStates.analysis}
@@ -303,6 +316,7 @@ export default function PoshmarkProListerPage() {
                         <ImageUploader
                             images={images}
                             onImageUpload={handleImageUpload}
+                            onImageRemove={handleImageRemove}
                             onClear={handleClearImages}
                             onAnalyze={handleAnalyze}
                             isLoading={loadingStates.analysis}

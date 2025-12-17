@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRef } from 'react';
-import { UploadCloud, Loader2, X, Sparkles } from 'lucide-react';
+import { UploadCloud, Loader2, X, Sparkles, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -18,9 +18,10 @@ type ImageUploaderProps = {
   isLoading: boolean;
   images: string[];
   onClear: () => void;
+  onImageRemove: (index: number) => void;
 };
 
-export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, images, onClear }: ImageUploaderProps) {
+export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, images, onClear, onImageRemove }: ImageUploaderProps) {
   const { control } = useFormContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -154,14 +155,26 @@ export default function ImageUploader({ onImageUpload, onAnalyze, isLoading, ima
                             <Carousel className="w-full h-full max-h-[400px]">
                             <CarouselContent>
                                 {images.map((image, index) => (
-                                <CarouselItem key={index}>
+                                <CarouselItem key={index} className="relative group/item">
                                     <div className="relative w-full h-full aspect-square">
-                                    <Image
-                                        src={image}
-                                        alt={`Product Preview ${index + 1}`}
-                                        fill
-                                        className="object-contain rounded-md"
-                                    />
+                                      <Image
+                                          src={image}
+                                          alt={`Product Preview ${index + 1}`}
+                                          fill
+                                          className="object-contain rounded-md"
+                                      />
+                                      <Button
+                                        variant="destructive"
+                                        size="icon"
+                                        className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          onImageRemove(index);
+                                        }}
+                                      >
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Remove image</span>
+                                      </Button>
                                     </div>
                                 </CarouselItem>
                                 ))}
