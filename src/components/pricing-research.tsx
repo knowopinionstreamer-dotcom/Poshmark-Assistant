@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { ExternalLink, Search, ImageIcon, Loader2 } from 'lucide-react';
-import { URL } from 'url';
+import { ExternalLink, Search, ImageIcon, Loader2, Globe } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 type PricingResearchProps = {
     onTextSearch: () => void;
@@ -30,7 +30,6 @@ const getPlatformName = (url: string) => {
     }
 };
 
-
 export default function PricingResearch({ 
     onTextSearch, 
     onVisualSearch, 
@@ -39,7 +38,23 @@ export default function PricingResearch({
     textQueries, 
     visualQueries 
 }: PricingResearchProps) {
-  const { control } = useFormContext();
+  const { control, getValues } = useFormContext();
+  const { toast } = useToast();
+
+  const handleGoogleSearch = () => {
+    const { brand, model, size } = getValues();
+    if (!brand && !model) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing Information',
+        description: 'Please provide a Brand and/or Model for Google search.',
+      });
+      return;
+    }
+    const searchQuery = [brand, model, size].filter(Boolean).join(' ');
+    const url = `https://www.google.com/search?q=${encodeURIComponent(searchQuery)}`;
+    window.open(url, '_blank');
+  };
 
   const renderSearchResults = (title: string, results: string[] | null, isSearch: boolean) => (
     (results && results.length > 0) && (
@@ -70,14 +85,18 @@ export default function PricingResearch({
         <CardDescription>Research pricing on popular marketplaces and set your target price.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Button onClick={onTextSearch} disabled={isTextLoading}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Button onClick={onTextSearch} disabled={isTextLoading} variant="secondary">
             {isTextLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2" />}
             Text Search
           </Button>
-          <Button onClick={onVisualSearch} disabled={isVisualLoading}>
+          <Button onClick={onVisualSearch} disabled={isVisualLoading} variant="secondary">
             {isVisualLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ImageIcon className="mr-2" />}
             Visual Search
+          </Button>
+           <Button onClick={handleGoogleSearch} variant="secondary">
+            <Globe className="mr-2" />
+            Google Search
           </Button>
         </div>
         
