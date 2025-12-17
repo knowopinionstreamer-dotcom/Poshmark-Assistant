@@ -204,7 +204,7 @@ export default function PoshmarkProListerPage() {
       });
       form.setValue('title', result.title);
       
-      const disclaimer = `\n\n**BUYER INFORMATION (Please Read):**\n\nPhotos are of actual sale item and accurately represent its condition. Any marks or imperfections should be in the photos.\nIf you have any questions or concerns or want more photos, please ask BEFORE purchase.\nThe items color may be slightly different due to your screen settings and lighting.\nEverything comes from a smoke-free, pet-free environment.\nAll reasonable offers considered. Bundle 2 or more items for discounted Price and Shipping.\nItem is Cross-listed\nThanks for looking! Check out my other listings for more great items and prices!!!`;
+      const disclaimer = `\n\n**BUYER INFORMATION (Please Read):**\n- Photos are of actual sale item and accurately represent its condition. Any marks or imperfections should be in the photos.\n- If you have any questions or concerns or want more photos, please ask BEFORE purchase.\n- The items color may be slightly different due to your screen settings and lighting.\n- Everything comes from a smoke-free, pet-free environment.\n- All reasonable offers considered. Bundle 2 or more items for discounted Price and Shipping.\n- Item is Cross-listed\n- Thanks for looking! Check out my other listings for more great items and prices!!!`;
       
       form.setValue('description', result.description + disclaimer);
       setListingDraft(result);
