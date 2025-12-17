@@ -21,6 +21,7 @@ import ListingDraft from '@/components/listing-draft';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { listingFormSchema, type ListingFormValues } from '@/app/schema';
 import type { DraftGenerationOutput } from '@/ai/flows/draft-generation';
+import ImagePreview from '@/components/image-preview';
 
 export default function PoshmarkProListerPage() {
   const [activeTab, setActiveTab] = useState('upload');
@@ -263,36 +264,16 @@ export default function PoshmarkProListerPage() {
             </TabsContent>
             
             <TabsContent value="details">
-                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    <div className="lg:col-span-2 h-fit">
-                        <ImageUploader
-                            images={images}
-                            onImageUpload={handleImageUpload}
-                            onImageRemove={handleImageRemove}
-                            onClear={handleClearImages}
-                            onAnalyze={handleAnalyze}
-                            isLoading={loadingStates.analysis}
-                        />
-                    </div>
-                    <div className="lg:col-span-3">
-                        <ItemDetailsFields isAnalyzing={loadingStates.analysis} footerActions={itemDetailsFooter} />
-                    </div>
+                 <div className="space-y-8">
+                    <ImagePreview images={images} onClear={handleClearImages} />
+                    <ItemDetailsFields isAnalyzing={loadingStates.analysis} footerActions={itemDetailsFooter} />
                 </div>
             </TabsContent>
 
             <TabsContent value="pricing">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    <div className="lg:col-span-2 h-fit">
-                        <ImageUploader
-                            images={images}
-                            onImageUpload={handleImageUpload}
-                            onImageRemove={handleImageRemove}
-                            onClear={handleClearImages}
-                            onAnalyze={handleAnalyze}
-                            isLoading={loadingStates.analysis}
-                        />
-                    </div>
-                    <div className="lg:col-span-3 space-y-4">
+                <div className="space-y-8">
+                    <ImagePreview images={images} onClear={handleClearImages} />
+                    <div className="space-y-4">
                         <PricingResearch 
                           onTextSearch={handleTextSearch}
                           onVisualSearch={handleVisualSearch}
@@ -311,23 +292,12 @@ export default function PoshmarkProListerPage() {
             </TabsContent>
 
             <TabsContent value="draft">
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    <div className="lg:col-span-2 h-fit">
-                        <ImageUploader
-                            images={images}
-                            onImageUpload={handleImageUpload}
-                            onImageRemove={handleImageRemove}
-                            onClear={handleClearImages}
-                            onAnalyze={handleAnalyze}
-                            isLoading={loadingStates.analysis}
-                        />
-                    </div>
-                    <div className="lg:col-span-3">
-                        <ListingDraft 
-                          onGenerateDraft={handleDraftGeneration} 
-                          isLoading={loadingStates.draft}
-                        />
-                    </div>
+                <div className="space-y-8">
+                    <ImagePreview images={images} onClear={handleClearImages} />
+                    <ListingDraft 
+                      onGenerateDraft={handleDraftGeneration} 
+                      isLoading={loadingStates.draft}
+                    />
                 </div>
             </TabsContent>
 
