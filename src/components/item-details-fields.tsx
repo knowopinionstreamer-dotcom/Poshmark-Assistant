@@ -25,115 +25,117 @@ export default function ItemDetailsFields({ isAnalyzing, footerActions }: ItemDe
         <CardTitle>Item Details</CardTitle>
       </CardHeader>
       <CardContent>
-        {isAnalyzing ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-            <FieldSkeleton />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <FormField
-              control={control}
-              name="brand"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Brand</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Nike" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="model"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Model / Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Air Max 90" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="style"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Style</FormLabel>
-                  <FormControl>
-                   <Input placeholder="e.g. Sneaker" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Color</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. White / Red" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="gender"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gender</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {isAnalyzing ? (
+            <>
+                <FieldSkeleton />
+                <FieldSkeleton />
+                <FieldSkeleton />
+                <FieldSkeleton />
+                <FieldSkeleton />
+                <FieldSkeleton />
+            </>
+            ) : (
+            <>
+                <FormField
+                control={control}
+                name="brand"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Brand</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a gender" />
-                      </SelectTrigger>
+                        <Input placeholder="e.g. Nike" {...field} />
                     </FormControl>
-                    <SelectContent>
-                      {genders.map((gender) => (
-                          <SelectItem key={gender} value={gender}>{gender}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="condition"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Condition</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={control}
+                name="model"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Model / Name</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a condition" />
-                      </SelectTrigger>
+                        <Input placeholder="e.g. Air Max 90" {...field} />
                     </FormControl>
-                    <SelectContent>
-                       {conditions.map((condition) => (
-                          <SelectItem key={condition} value={condition}>{condition}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={control}
+                name="style"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Style</FormLabel>
+                    <FormControl>
+                    <Input placeholder="e.g. Sneaker" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={control}
+                name="color"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Color</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g. White / Red" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={control}
+                name="gender"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Gender</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a gender" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        {genders.map((gender) => (
+                            <SelectItem key={gender} value={gender}>{gender}</SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={control}
+                name="condition"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Condition</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a condition" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        {conditions.map((condition) => (
+                            <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </>
+            )}
+        </div>
       </CardContent>
        {footerActions && !isAnalyzing && (
         <CardFooter className="border-t p-4 flex flex-col sm:flex-row gap-3 justify-between">
