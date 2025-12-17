@@ -39,17 +39,12 @@ const draftGenerationPrompt = ai.definePrompt({
 Read the provided Generate Poshmark Listing carefully.
 Identify and extract only the suggested title from the Generate Poshmark Listing. Ensure the extracted Title includes the Brand, item type, model, style, color, and applicable gender (men's, women's, or kids), and size, if available in the content.
 Output the extracted Title as a clear, copy-pasteable text section, with no additional formatting or surrounding text.
-2.  **Generate a Description**: You are an expert Poshmark listing content extractor. Your task is to precisely extract only the detailed description, including the required disclaimer formatted as a list, from the provided 'Generate Poshmark Listing Content' output. The extracted description should be formatted as a clear, copy-pasteable text section, ready for direct use, and the total length of the description and disclaimer combined must be less than 1000 characters.
+2.  **Generate a Description**: You are an expert Poshmark listing content extractor. Your task is to precisely extract a detailed description. The total length of the description must be less than 1000 characters. Use the provided sample as a template for the tone and structure. Include the specific item details in a bulleted list.
 
-Carefully read and understand the entire content of the provided Generate Poshmark Listing.
-Identify the section within the Generate Poshmark Listing that constitutes the detailed description of the item. This description should include all key features, condition details, and the mandatory disclaimer.
-Extract only this detailed Description and the required disclaimer.
-Format the extracted disclaimer as a list.
-Present the extracted description and the list-formatted disclaimer as a single, contiguous block of text, ensuring it is clean and directly copy-pasteable without any additional formatting or surrounding text.
-Check the total character count of the extracted description and disclaimer. If the combined length is 1000 characters or more, go back to step 3 and re-extract, ensuring the combined length is less than 1000 characters.
+  **Sample Description:**
+  Travel in style with the Michael Kors Duffel Bag. Its spacious interior and multiple pockets make it easy to stay organized while on the go. The adjustable shoulder strap ensures comfortable carrying, while the high-quality leather material guarantees durability for all your travel adventures.
 
-
-  **Item Details:**
+  **Item Details (to be included in bullet form):**
   - Brand: {{{brand}}}
   - Model: {{{model}}}
   - Style: {{{style}}}
