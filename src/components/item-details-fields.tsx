@@ -24,7 +24,7 @@ export default function ItemDetailsFields({ isAnalyzing, footerActions }: ItemDe
       <CardHeader>
         <CardTitle>Item Details</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent>
         {isAnalyzing ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <FieldSkeleton />
