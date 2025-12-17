@@ -247,10 +247,10 @@ export default function PoshmarkProListerPage() {
       <FormProvider {...form}>
          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
             <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-muted rounded-lg">
-              <TabsTrigger value="upload" className="py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">1. Upload</TabsTrigger>
-              <TabsTrigger value="details" className="py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">2. Details</TabsTrigger>
-              <TabsTrigger value="pricing" className="py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">3. Pricing</TabsTrigger>
-              <TabsTrigger value="draft" className="py-2 data-[state=active]:bg-card data-[state=active]:shadow-sm">4. Listing</TabsTrigger>
+              <TabsTrigger value="upload" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">1. Upload</TabsTrigger>
+              <TabsTrigger value="details" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">2. Details</TabsTrigger>
+              <TabsTrigger value="pricing" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">3. Pricing</TabsTrigger>
+              <TabsTrigger value="draft" className="py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">4. Listing</TabsTrigger>
             </TabsList>
 
             <TabsContent value="upload">
