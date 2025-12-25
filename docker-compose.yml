@@ -3,11 +3,15 @@ services:
   poshmark-assistant:
     build: .
     container_name: poshmark-assistant
+    user: root
     ports:
       - "3000:3000"
     environment:
       - GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}
       - DATABASE_URL=file:/app/prisma/dev.db
+      - HOSTNAME=0.0.0.0
     volumes:
       - ./prisma:/app/prisma
+      - "/mnt/e/Homelab/Poshmark photos:/app/photos"
+      - "/mnt/e/WSL/Obsidian/Homelab/Homelab:/app/obsidian"
     restart: always
