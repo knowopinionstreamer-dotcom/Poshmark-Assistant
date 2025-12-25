@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Item {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Item Details
+  brand       String?
+  model       String?
+  size        String?
+  style       String?
+  color       String?
+  gender      String?
+  condition   String?
+  material    String?
+  
+  // Listing Content
+  title       String?
+  description String?
+  price       Float?   // Your target listing price
+  costPrice   Float?   // What you paid for it
+  
+  // Status
+  status      String   @default("DRAFT") // DRAFT, LISTED, SOLD
+  platform    String?  // Poshmark, eBay, Mercari
+  
+  // Images (stored as JSON array of URLs/Paths for now)
+  images      String?  
+}

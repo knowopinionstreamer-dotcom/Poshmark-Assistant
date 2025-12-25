@@ -9,10 +9,12 @@ import {
   draftGenerationAction,
   pricingResearchAction,
 } from '@/app/actions';
-import { ArrowRight, CheckCircle2, FileText, Sparkles } from 'lucide-react';
+import { saveItemDraft, getRecentItems } from '@/app/inventory-actions';
+import { ArrowRight, CheckCircle2, FileText, Sparkles, Save, History } from 'lucide-react';
 
 // UI Components
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ImageUploader from '@/components/image-uploader';
 import ItemDetailsFields from '@/components/item-details-fields';
 import PricingResearch from '@/components/pricing-research';
@@ -37,6 +39,31 @@ export default function PoshmarkProListerPage() {
 
   const [textSearchResults, setTextSearchResults] = useState<PricingResearchOutput | null>(null);
   const [listingDraft, setListingDraft] = useState<DraftGenerationOutput | null>(null);
+  const [recentItems, setRecentItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadRecentItems();
+  }, []);
+
+  const loadRecentItems = async () => {
+    const items = await getRecentItems();
+    setRecentItems(items);
+  };
+
+  const handleSaveDraft = async () => {
+    const values = form.getValues();
+    try {
+        await saveItemDraft({
+            ...values,
+            price: values.targetPrice,
+            status: 'DRAFT'
+        });
+        toast({ title: 'Draft Saved', description: 'Your item has been saved to the database.' });
+        loadRecentItems();
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save to database.' });
+    }
+  };
 
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingFormSchema),
@@ -281,11 +308,51 @@ export default function PoshmarkProListerPage() {
                       onGenerateDraft={handleDraftGeneration} 
                       isLoading={loadingStates.draft}
                     />
+                    <div className="flex justify-end">
+                        <Button onClick={handleSaveDraft} size="lg" className="w-full sm:w-auto">
+                            <Save className="mr-2 h-5 w-5" />
+                            Save to Inventory
+                        </Button>
+                    </div>
                 </div>
             </TabsContent>
 
          </Tabs>
       </FormProvider>
+
+      {/* Recent Items Section */}
+      <section className="mt-16">
+        <div className="flex items-center gap-2 mb-6">
+            <History className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold">Recent Inventory</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {recentItems.map((item) => (
+                <Card key={item.id} className="overflow-hidden">
+                    <div className="aspect-video relative bg-muted">
+                        {item.images && item.images.length > 0 ? (
+                            <img src={item.images[0]} alt={item.title || 'Item'} className="object-cover w-full h-full" />
+                        ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground">No Image</div>
+                        )}
+                    </div>
+                    <CardHeader>
+                        <CardTitle className="truncate text-lg">{item.title || 'Untitled Draft'}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground mb-2">{item.brand} {item.model}</p>
+                        <div className="flex justify-between items-center">
+                            <span className="font-bold text-lg">${item.price || '0.00'}</span>
+                            <span className="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground">{item.status}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+            ))}
+            {recentItems.length === 0 && (
+                <p className="text-muted-foreground col-span-full text-center py-8">No saved items yet. Start listing to build your inventory!</p>
+            )}
+        </div>
+      </section>
     </main>
   );
 }
