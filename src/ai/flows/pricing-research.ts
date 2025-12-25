@@ -13,14 +13,20 @@ import {z} from 'genkit';
 const PricingResearchInputSchema = z.object({
   brand: z.string().describe('The brand of the item.'),
   model: z.string().describe('The model of the item.'),
+  styleNumber: z.string().optional().describe('Specific style number or SKU.'),
+  visualSearchQuery: z.string().optional().describe('The precise query string identified by AI analysis.'),
   size: z.string().optional().describe('The size of the item.'),
   condition: z.string().describe('The condition of the item (e.g., new, used).'),
 });
 export type PricingResearchInput = z.infer<typeof PricingResearchInputSchema>;
 
 const PricingResearchOutputSchema = z.object({
-  searchQueries: z.array(z.string()).describe('An array of search URLs for eBay, Poshmark, and Mercari/Amazon.'),
+  searchQueries: z.array(z.string()).describe('An array of search URLs for eBay, Poshmark, and Mercari.'),
   suggestedPrice: z.number().optional().describe('The suggested price for the item based on research.'),
+  demand: z.string().optional().describe('Market demand rating (e.g., Hot Seller, Slow & Steady).'),
+  valueDrivers: z.array(z.string()).optional().describe('Key reasons for the price (e.g., Rare color, High demand).'),
+  matchCount: z.number().optional().describe('Number of exact matches found during research.'),
+  priceExplanation: z.string().optional().describe('A detailed, copy-pasteable explanation of how the price was determined.'),
 });
 export type PricingResearchOutput = z.infer<typeof PricingResearchOutputSchema>;
 
@@ -32,34 +38,28 @@ const pricingResearchPrompt = ai.definePrompt({
   name: 'pricingResearchPrompt',
   input: {schema: PricingResearchInputSchema},
   output: {schema: PricingResearchOutputSchema},
-  prompt: `You are an expert reseller assistant. Your tasks are to:
-  1. Generate search URLs for various marketplaces to help a user research the price of an item.
-  2. Suggest a competitive listing price based on the provided item details.
+  prompt: `You are an expert reseller strategist. Your goal is to provide a "Market Intel Report."
 
-  You will be given the item's brand, model, size, and condition.
+### TASK 1: SEARCH LINKS
+Generate URLs for Poshmark (Sold), eBay (Sold), Mercari, and Amazon using ONLY "{{brand}} {{model}}".
 
-  Item Details:
-  - Brand: {{{brand}}}
-  - Model: {{{model}}}
-  - Size: {{{size}}}
-  - Condition: {{{condition}}}
+### TASK 2: MARKET INTELLIGENCE
+1. **Demand Rating**: Rate the item's liquidity. 
+2. **Value Drivers**: Identify 2-3 specific reasons for the price.
+3. **Match Count**: Based on your knowledge and the style number, estimate how many "Exact Matches" currently exist in the sold market history.
 
-  Instructions for Search URLs:
-  1. Create a search query string that includes the brand, model, and size (if available).
-  2. Based on the item's condition, generate search URLs for the appropriate platforms:
-     - If the condition is 'New with tags', 'New', or similar, generate URLs for Poshmark, eBay, and Amazon.
-     - If the condition is 'Used', 'Excellent used condition', or similar, generate URLs for Poshmark, eBay, and Mercari.
-  3. Format the output as a JSON object containing an array of these URLs.
+### TASK 3: OPTIMAL PRICING
+- **Determine an optimal listing price**: Consider factors such as condition ({{{condition}}}), brand ({{{brand}}}), demand, and competitive pricing among both new and used items.
+- **Formulate a clear explanation**: Reference the market values and findings from your internal research.
+- **Combine**: Merge the determined optimal listing price and its explanation into a single, clear, copy-pasteable text section.
 
-  Instructions for Suggested Price:
-  - Based on your knowledge of online marketplaces and the item details, determine a realistic and competitive selling price.
-  - The price should be a number, without any currency symbols.
-
-  Example query: "Nike Air Max 90 10.5"
-  Example URL for Poshmark: "https://poshmark.com/search?query=Nike+Air+Max+90+10.5"
-  Example URL for eBay: "https://www.ebay.com/sch/i.html?_nkw=Nike+Air+Max+90+10.5"
-  Example URL for Mercari: "https://www.mercari.com/search/?keyword=Nike+Air+Max+90+10.5"
-  Example URL for Amazon: "https://www.amazon.com/s?k=Nike+Air+Max+90+10.5"
+**Inputs:**
+- Brand: {{{brand}}}
+- Model: {{{model}}}
+- Visual Search Query: {{{visualSearchQuery}}}
+- Style Number: {{{styleNumber}}}
+- Size: {{{size}}}
+- Condition: {{{condition}}}
   `,
 });
 
@@ -70,7 +70,11 @@ const pricingResearchFlow = ai.defineFlow(
     outputSchema: PricingResearchOutputSchema,
   },
   async input => {
-    const {output} = await pricingResearchPrompt(input);
+    const {output} = await pricingResearchPrompt(input, {
+      config: {
+        temperature: 0, // Enforce consistent, non-random results
+      }
+    });
     return output!;
   }
 );

@@ -66,6 +66,19 @@ export default function ItemDetailsFields({ isAnalyzing, footerActions }: ItemDe
                 />
                 <FormField
                 control={control}
+                name="styleNumber"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Style Number / SKU</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g. AR4230-001" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={control}
                 name="size"
                 render={({ field }) => (
                     <FormItem>

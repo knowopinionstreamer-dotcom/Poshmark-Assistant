@@ -54,3 +54,9 @@ __pycache__/
 poshmark_bot/photos/*
 poshmark_bot/processed_listing/*
 /src/generated/prisma
+
+# Backups and Logs
+*.tar
+*.log
+prisma/dev.db
+

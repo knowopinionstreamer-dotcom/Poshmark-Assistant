@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Copy } from 'lucide-react';
 import { Separator } from './ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 type ListingDraftProps = {
     onGenerateDraft: () => void;
@@ -15,7 +16,18 @@ type ListingDraftProps = {
 };
 
 export default function ListingDraft({ onGenerateDraft, isLoading }: ListingDraftProps) {
-  const { control } = useFormContext();
+  const { control, getValues } = useFormContext();
+  const { toast } = useToast();
+
+  const copyToClipboard = (fieldName: string, label: string) => {
+    const value = getValues(fieldName);
+    if (!value) {
+        toast({ variant: "destructive", title: "Nothing to copy", description: `The ${label} is currently empty.` });
+        return;
+    }
+    navigator.clipboard.writeText(value);
+    toast({ title: "Copied!", description: `${label} has been copied to your clipboard.` });
+  };
 
   return (
     <Card>
@@ -26,7 +38,7 @@ export default function ListingDraft({ onGenerateDraft, isLoading }: ListingDraf
       <CardContent className="space-y-6">
         <Button onClick={onGenerateDraft} disabled={isLoading} className="w-full" variant="secondary">
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2" />}
-          Generate Listing Draft
+          🚀 Generate Pro Listing
         </Button>
 
         <div className="space-y-4">
@@ -35,7 +47,18 @@ export default function ListingDraft({ onGenerateDraft, isLoading }: ListingDraf
             name="title"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Title</FormLabel>
+                <div className="flex items-center justify-between">
+                    <FormLabel>Title</FormLabel>
+                    <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 px-2 text-xs text-muted-foreground hover:text-primary"
+                        onClick={() => copyToClipboard('title', 'Title')}
+                    >
+                        <Copy className="mr-1 h-3 w-3" /> Copy Title
+                    </Button>
+                </div>
                 <FormControl>
                   <Input placeholder="AI-generated title will appear here" {...field} />
                 </FormControl>
@@ -48,7 +71,18 @@ export default function ListingDraft({ onGenerateDraft, isLoading }: ListingDraf
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description</FormLabel>
+                <div className="flex items-center justify-between">
+                    <FormLabel>Description</FormLabel>
+                    <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 px-2 text-xs text-muted-foreground hover:text-primary"
+                        onClick={() => copyToClipboard('description', 'Description')}
+                    >
+                        <Copy className="mr-1 h-3 w-3" /> Copy Description
+                    </Button>
+                </div>
                 <FormControl>
                   <Textarea placeholder="AI-generated description will appear here" {...field} rows={10} />
                 </FormControl>
