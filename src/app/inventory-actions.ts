@@ -31,11 +31,11 @@ export async function saveItemDraft(data: any) {
   }
 }
 
-export async function getRecentItems() {
+export async function getRecentItems(limit?: number) {
     try {
         const items = await db.item.findMany({
             orderBy: { createdAt: 'desc' },
-            take: 10
+            ...(limit ? { take: limit } : {})
         });
         return items.map(item => ({
             ...item,
@@ -44,5 +44,46 @@ export async function getRecentItems() {
     } catch (error) {
         console.error('Failed to fetch items:', error);
         return [];
+    }
+}
+
+export async function deleteItem(id: string) {
+    try {
+        await db.item.delete({ where: { id } });
+        revalidatePath('/inventory');
+        revalidatePath('/');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to delete item:', error);
+        throw new Error('Failed to delete item.');
+    }
+}
+
+export async function updateItemStatus(id: string, status: string) {
+    try {
+        await db.item.update({
+            where: { id },
+            data: { status }
+        });
+        revalidatePath('/inventory');
+        revalidatePath('/');
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to update status:', error);
+        throw new Error('Failed to update item status.');
+    }
+}
+
+export async function getItemById(id: string) {
+    try {
+        const item = await db.item.findUnique({ where: { id } });
+        if (!item) return null;
+        return {
+            ...item,
+            images: item.images ? JSON.parse(item.images) : []
+        };
+    } catch (error) {
+        console.error('Failed to fetch item:', error);
+        return null;
     }
 }

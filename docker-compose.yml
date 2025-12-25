@@ -9,7 +9,6 @@ services:
     environment:
       - GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}
       - DATABASE_URL=file:/app/prisma/dev.db
-      - HOSTNAME=0.0.0.0
     volumes:
       - ./prisma:/app/prisma
       - "/mnt/e/Homelab/Poshmark photos:/app/photos"

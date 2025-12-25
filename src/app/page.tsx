@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlusCircle, Package, TrendingUp, History } from 'lucide-react';
 import { getRecentItems } from '@/app/inventory-actions';
+import InventoryItemCard from '@/components/inventory-item-card';
 
 export default async function DashboardPage() {
-  const recentItems = await getRecentItems();
+  const recentItems = await getRecentItems(6);
 
   return (
     <div className="space-y-8">
@@ -53,25 +54,8 @@ export default async function DashboardPage() {
             <h2 className="text-xl font-semibold tracking-tight">Recent Activity</h2>
         </div>
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentItems.slice(0, 6).map((item) => (
-                <Card key={item.id} className="overflow-hidden">
-                    <div className="aspect-video relative bg-muted">
-                        {item.images && item.images.length > 0 ? (
-                            <img src={item.images[0]} alt={item.title || 'Item'} className="object-cover w-full h-full" />
-                        ) : (
-                            <div className="flex items-center justify-center h-full text-muted-foreground text-xs">No Image</div>
-                        )}
-                    </div>
-                    <CardHeader className="p-4">
-                        <CardTitle className="truncate text-base">{item.title || 'Untitled Draft'}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                        <div className="flex justify-between items-center">
-                            <span className="font-bold text-primary">${item.price || '0.00'}</span>
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-secondary text-secondary-foreground">{item.status}</span>
-                        </div>
-                    </CardContent>
-                </Card>
+            {recentItems.map((item) => (
+                <InventoryItemCard key={item.id} item={item} />
             ))}
              {recentItems.length === 0 && (
                 <p className="text-muted-foreground text-sm italic">No items found yet. Start by creating a listing!</p>

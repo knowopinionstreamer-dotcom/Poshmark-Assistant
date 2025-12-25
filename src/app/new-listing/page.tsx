@@ -1,20 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
+import { useSearchParams } from 'next/navigation';
 import {
   analyzeImagesAction,
   draftGenerationAction,
   pricingResearchAction,
 } from '@/app/actions';
-import { saveItemDraft, getRecentItems } from '@/app/inventory-actions';
-import { ArrowRight, CheckCircle2, FileText, Sparkles, Save, History } from 'lucide-react';
+import { saveItemDraft, getItemById } from '@/app/inventory-actions';
+import { ArrowRight, CheckCircle2, FileText, Save, Loader2 } from 'lucide-react';
 
 // UI Components
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ImageUploader from '@/components/image-uploader';
 import ItemDetailsFields from '@/components/item-details-fields';
 import PricingResearch from '@/components/pricing-research';
@@ -25,11 +25,23 @@ import type { DraftGenerationOutput } from '@/ai/flows/draft-generation';
 import type { PricingResearchOutput } from '@/ai/flows/pricing-research';
 import ImagePreview from '@/components/image-preview';
 
-const defaultDisclaimer = `\n\n**BUYER INFORMATION (Please Read):**\n- Photos are of actual sale item and accurately represent its condition. Any marks or imperfections should be in the photos.\n- If you have any questions or concerns or want more photos, please ask BEFORE purchase.\n- The items color may be slightly different due to your screen settings and lighting.\n- Everything comes from a smoke-free, pet-free environment.\n- All reasonable offers considered. Bundle 2 or more items for discounted Price and Shipping.\n- Item is Cross-listed\n- Thanks for looking! Check out my other listings for more great items and prices!!!`;
+const defaultDisclaimer = `
 
-export default function PoshmarkProListerPage() {
+**BUYER INFORMATION (Please Read):**
+- Photos are of actual sale item and accurately represent its condition. Any marks or imperfections should be in the photos.
+- If you have any questions or concerns or want more photos, please ask BEFORE purchase.
+- The items color may be slightly different due to your screen settings and lighting.
+- Everything comes from a smoke-free, pet-free environment.
+- All reasonable offers considered. Bundle 2 or more items for discounted Price and Shipping.
+- Item is Cross-listed
+- Thanks for looking! Check out my other listings for more great items and prices!!!`;
+
+function PoshmarkProListerContent() {
+  const searchParams = useSearchParams();
+  const itemId = searchParams.get('id');
   const [activeTab, setActiveTab] = useState('upload');
   const { toast } = useToast();
+  const [isInitialLoading, setIsInitialLoading] = useState(!!itemId);
 
   const [loadingStates, setLoadingStates] = useState({
     analysis: false,
@@ -39,20 +51,6 @@ export default function PoshmarkProListerPage() {
 
   const [textSearchResults, setTextSearchResults] = useState<PricingResearchOutput | null>(null);
   const [listingDraft, setListingDraft] = useState<DraftGenerationOutput | null>(null);
-
-  const handleSaveDraft = async () => {
-    const values = form.getValues();
-    try {
-        await saveItemDraft({
-            ...values,
-            price: values.targetPrice,
-            status: 'DRAFT'
-        });
-        toast({ title: 'Draft Saved', description: 'Your item has been saved to the database.' });
-    } catch (error) {
-        toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save to database.' });
-    }
-  };
 
   const form = useForm<ListingFormValues>({
     resolver: zodResolver(listingFormSchema),
@@ -70,6 +68,55 @@ export default function PoshmarkProListerPage() {
       disclaimer: defaultDisclaimer,
     },
   });
+
+  useEffect(() => {
+    async function loadItem() {
+      if (itemId) {
+        try {
+          const item = await getItemById(itemId);
+          if (item) {
+            form.reset({
+              images: item.images as string[],
+              brand: item.brand || '',
+              model: item.model || '',
+              size: item.size || '',
+              style: item.style || '',
+              color: item.color || '',
+              gender: item.gender || '',
+              condition: item.condition || 'Used',
+              title: item.title || '',
+              description: item.description || '',
+              targetPrice: item.price || undefined,
+              disclaimer: defaultDisclaimer, // Or extract from description if possible
+            });
+            setActiveTab('details');
+          } else {
+            toast({ variant: 'destructive', title: 'Error', description: 'Item not found.' });
+          }
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load item.' });
+        } finally {
+          setIsInitialLoading(false);
+        }
+      }
+    }
+    loadItem();
+  }, [itemId, form, toast]);
+
+  const handleSaveDraft = async () => {
+    const values = form.getValues();
+    try {
+        await saveItemDraft({
+            ...values,
+            id: itemId || undefined,
+            price: values.targetPrice,
+            status: 'DRAFT'
+        });
+        toast({ title: itemId ? 'Item Updated' : 'Draft Saved', description: 'Your item has been saved to the database.' });
+    } catch (error) {
+        toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save to database.' });
+    }
+  };
 
   const images = form.watch('images');
 
@@ -238,6 +285,17 @@ export default function PoshmarkProListerPage() {
     </>
   );
 
+  if (isInitialLoading) {
+    return (
+        <div className="flex h-[70vh] items-center justify-center">
+            <div className="text-center space-y-4">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+                <p className="text-muted-foreground animate-pulse">Loading item details...</p>
+            </div>
+        </div>
+    );
+  }
+
   return (
      <main className="container mx-auto p-4 md:p-8">
       <header className="mb-8 text-center">
@@ -310,4 +368,16 @@ export default function PoshmarkProListerPage() {
       </FormProvider>
     </main>
   );
+}
+
+export default function PoshmarkProListerPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-[70vh] items-center justify-center">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        }>
+            <PoshmarkProListerContent />
+        </Suspense>
+    );
 }
