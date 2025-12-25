@@ -4,14 +4,13 @@ import { Suspense, useState, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import {
   analyzeImagesAction,
   draftGenerationAction,
   pricingResearchAction,
 } from '@/app/actions';
-import { saveItemDraft, getItemById } from '@/app/inventory-actions';
-import { ArrowRight, CheckCircle2, FileText, Save, Loader2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, FileText, Loader2 } from 'lucide-react';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -38,10 +37,15 @@ const defaultDisclaimer = `
 
 function PoshmarkProListerContent() {
   const searchParams = useSearchParams();
-  const itemId = searchParams.get('id');
-  const [activeTab, setActiveTab] = useState('upload');
+  const router = useRouter();
+  const activeTab = searchParams.get('tab') || 'upload';
   const { toast } = useToast();
-  const [isInitialLoading, setIsInitialLoading] = useState(!!itemId);
+
+  const setActiveTab = (tab: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.push(`/new-listing?${params.toString()}`);
+  };
 
   const [loadingStates, setLoadingStates] = useState({
     analysis: false,
@@ -68,55 +72,6 @@ function PoshmarkProListerContent() {
       disclaimer: defaultDisclaimer,
     },
   });
-
-  useEffect(() => {
-    async function loadItem() {
-      if (itemId) {
-        try {
-          const item = await getItemById(itemId);
-          if (item) {
-            form.reset({
-              images: item.images as string[],
-              brand: item.brand || '',
-              model: item.model || '',
-              size: item.size || '',
-              style: item.style || '',
-              color: item.color || '',
-              gender: item.gender || '',
-              condition: item.condition || 'Used',
-              title: item.title || '',
-              description: item.description || '',
-              targetPrice: item.price || undefined,
-              disclaimer: defaultDisclaimer, // Or extract from description if possible
-            });
-            setActiveTab('details');
-          } else {
-            toast({ variant: 'destructive', title: 'Error', description: 'Item not found.' });
-          }
-        } catch (error) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load item.' });
-        } finally {
-          setIsInitialLoading(false);
-        }
-      }
-    }
-    loadItem();
-  }, [itemId, form, toast]);
-
-  const handleSaveDraft = async () => {
-    const values = form.getValues();
-    try {
-        await saveItemDraft({
-            ...values,
-            id: itemId || undefined,
-            price: values.targetPrice,
-            status: 'DRAFT'
-        });
-        toast({ title: itemId ? 'Item Updated' : 'Draft Saved', description: 'Your item has been saved to the database.' });
-    } catch (error) {
-        toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save to database.' });
-    }
-  };
 
   const images = form.watch('images');
 
@@ -285,17 +240,6 @@ function PoshmarkProListerContent() {
     </>
   );
 
-  if (isInitialLoading) {
-    return (
-        <div className="flex h-[70vh] items-center justify-center">
-            <div className="text-center space-y-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-                <p className="text-muted-foreground animate-pulse">Loading item details...</p>
-            </div>
-        </div>
-    );
-  }
-
   return (
      <main className="container mx-auto p-4 md:p-8">
       <header className="mb-8 text-center">
@@ -338,6 +282,10 @@ function PoshmarkProListerContent() {
                           isTextLoading={loadingStates.textSearch}
                           textQueries={textSearchResults?.searchQueries || []}
                           suggestedPrice={textSearchResults?.suggestedPrice}
+                          demand={textSearchResults?.demand}
+                          valueDrivers={textSearchResults?.valueDrivers}
+                          matchCount={textSearchResults?.matchCount}
+                          priceExplanation={textSearchResults?.priceExplanation}
                         />
                          <div className="flex justify-end">
                             <Button onClick={() => { setActiveTab("draft"); handleDraftGeneration(); }} size="lg" variant="secondary" className="w-full sm:w-auto">
@@ -355,12 +303,6 @@ function PoshmarkProListerContent() {
                       onGenerateDraft={handleDraftGeneration} 
                       isLoading={loadingStates.draft}
                     />
-                    <div className="flex justify-end">
-                        <Button onClick={handleSaveDraft} size="lg" className="w-full sm:w-auto">
-                            <Save className="mr-2 h-5 w-5" />
-                            Save to Inventory
-                        </Button>
-                    </div>
                 </div>
             </TabsContent>
 

@@ -29,19 +29,44 @@ export function Sidebar() {
                     New Listing
                 </Button>
             </Link>
-            <Link href="/inventory">
-                <Button variant={pathname === '/inventory' ? 'secondary' : 'ghost'} className="w-full justify-start">
-                    <Package className="mr-2 h-4 w-4" />
-                    Inventory
-                </Button>
-            </Link>
+            {pathname === '/new-listing' && (
+              <div className="ml-4 mt-1 space-y-1 border-l pl-4">
+                <Link href="/new-listing?tab=upload">
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-8">
+                    1. Upload Photos
+                  </Button>
+                </Link>
+                <Link href="/new-listing?tab=details">
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-8">
+                    2. Item Details
+                  </Button>
+                </Link>
+                <Link href="/new-listing?tab=pricing">
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-8">
+                    3. Pricing Intel
+                  </Button>
+                </Link>
+                <Link href="/new-listing?tab=draft">
+                  <Button variant="ghost" size="sm" className="w-full justify-start text-xs h-8">
+                    4. Final Listing
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
         <div className="px-3 py-2">
           <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight text-muted-foreground">
-            External
+            Reseller Tools
           </h2>
           <div className="space-y-1">
+             <a href="https://tools.joinflyp.com/my-items" target="_blank" rel="noopener noreferrer">
+                <Button variant="ghost" className="w-full justify-start">
+                    <Package className="mr-2 h-4 w-4" />
+                    Flyp Dashboard
+                    <ExternalLink className="ml-auto h-3 w-3 opacity-50" />
+                </Button>
+            </a>
              <a href="https://photos.google.com" target="_blank" rel="noopener noreferrer">
                 <Button variant="ghost" className="w-full justify-start">
                     <ImageIcon className="mr-2 h-4 w-4" />

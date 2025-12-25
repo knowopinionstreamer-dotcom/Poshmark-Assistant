@@ -1,13 +1,3 @@
-'use server';
-/**
- * @fileOverview This file defines the image analysis flow for listing items. It analyzes images and pre-fills item details.
- *
- * @exported
- * - `analyzeImagesToGenerateItemDetails`: Analyzes images to generate item details.
- * - `ImageAnalysisForListingInput`: Input type for the image analysis flow.
- * - `ImageAnalysisForListingOutput`: Output type for the image analysis flow.
- */
-
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
@@ -20,6 +10,8 @@ export type ImageAnalysisForListingInput = z.infer<typeof ImageAnalysisForListin
 const ImageAnalysisForListingOutputSchema = z.object({
   brand: z.string().describe("Brand of the item.").optional(),
   model: z.string().describe("Model of the item.").optional(),
+  styleNumber: z.string().describe("Specific style number, SKU, or RN found on tags.").optional(),
+  visualSearchQuery: z.string().describe("The exact string you would type into a Google Image search bar to find this identical item.").optional(),
   style: z.string().describe("Style of the item.").optional(),
   color: z.string().describe("Color of the item.").optional(),
   gender: z.string().describe("Gender associated with the item.").optional(),
@@ -29,34 +21,48 @@ const ImageAnalysisForListingOutputSchema = z.object({
 
 export type ImageAnalysisForListingOutput = z.infer<typeof ImageAnalysisForListingOutputSchema>;
 
-export async function analyzeImagesToGenerateItemDetails(
-  input: ImageAnalysisForListingInput
-): Promise<ImageAnalysisForListingOutput> {
-  return imageAnalysisForListingFlow(input);
-}
-
 const imageAnalysisPrompt = ai.definePrompt({
   name: 'imageAnalysisPrompt',
   input: { schema: ImageAnalysisForListingInputSchema },
   output: { schema: ImageAnalysisForListingOutputSchema },
-  prompt: `You are an AI assistant who is an expert at identifying products from images, similar to a Google Image Search. Your main goal is to identify the Brand and the exact Model of the item.
+  prompt: `You are an expert product image analyst working as part of an automated AI system. 
 
-  Your task is to meticulously analyze the following images. Examine every part of the item, including the front, back, interior, and any tags (brand tags, care labels, size tags).
-  From these images, extract the following information, prioritizing Brand and Model above all else:
-  - **Brand:** The brand name of the item. This is critical.
-  - **Model:** The specific model or name of the item. Be as precise as possible, as if you found the exact product page online.
-  - **Style:** The type or style of the item (e.g., "sneaker", "duffel bag", "t-shirt").
-  - **Color:** The primary color or colors of the item.
-  - **Gender:** The target gender (e.g., "Womens", "Mens", "Unisex", "Kids").
-  - **Condition:** The visual condition of the item (e.g., "New with tags", "Excellent used condition", "Good used condition").
-  - **Description:** A detailed paragraph describing the item. Mention key features and materials (like cotton, polyester, leather).
+  ### OUTPUT RULES
+  - NO CHIT-CHAT.
+  - NO EXPLAINING what you are doing or why.
+  - DO NOT start with "Okay", "Alright", or any preambles. 
+  - PROVIDE ONLY the structured data requested.
 
-  Images:
+  ### STEP-BY-STEP INSTRUCTIONS
+  1. **Systematic Scan**: Carefully analyze all provided Product Images. Scour every corner for brand tags, care labels, size stickers, and unique hardware or patterns.
+  2. **Identity Extraction**: Identify the core characteristics: Brand, Model Name, and any specific Style Number/SKU found on tags.
+  3. **Visual Query Formulation**: Create a "Visual Search Query"—the exact 5-8 word string you would type into a Google Image search bar to find this identical item.
+  4. **Contextual Analysis**: 
+     - **Style, Color, Condition**: Extract standard details.
+     - **Gender**: Provide "Womens", "Mens", "Unisex", or "Kids" ONLY if the item is clothing or shoes. Leave BLANK for all other items.
+     - **Size**: Provide the size ONLY if it is clearly visible or confirmed.
+  5. **Structured Summary**: Present all technical features and materials in a professional, concise description.
+
+  ### DATA TO EXTRACT
+  - **Brand**: Confirmed brand name.
+  - **Model**: Specific product name or line.
+  - **StyleNumber**: Exact SKU/Style code from the tags.
+  - **VisualSearchQuery**: The engineered Google Image search string.
+  - **Style, Color, Gender, Condition**: Core details.
+  - **Description**: A meticulous summary of technical features.
+
+  Product Images:
   {{#each photoDataUris}}
   {{media url=this}}
   {{/each}}
   `,
 });
+
+export async function analyzeImagesToGenerateItemDetails(
+  input: ImageAnalysisForListingInput
+): Promise<ImageAnalysisForListingOutput> {
+  return imageAnalysisForListingFlow(input);
+}
 
 const imageAnalysisForListingFlow = ai.defineFlow(
   {

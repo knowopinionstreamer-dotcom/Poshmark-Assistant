@@ -1,7 +1,8 @@
-version: '3.8'
 services:
   poshmark-assistant:
-    build: .
+    build:
+      context: .
+      target: development
     container_name: poshmark-assistant
     user: root
     ports:
@@ -9,8 +10,26 @@ services:
     environment:
       - GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}
       - DATABASE_URL=file:/app/prisma/dev.db
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
     volumes:
-      - ./prisma:/app/prisma
+      - .:/app
+      - /app/.next
+      - /app/node_modules
       - "/mnt/e/Homelab/Poshmark photos:/app/photos"
       - "/mnt/e/WSL/Obsidian/Homelab/Homelab:/app/obsidian"
+    command: npm run dev
+    restart: always
+
+  obsidian-watcher:
+    image: node:20
+    container_name: obsidian-watcher
+    user: root
+    volumes:
+      - .:/app
+      - "/mnt/e/WSL/Obsidian/Homelab/Homelab:/app/obsidian"
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+    command: npx tsx src/scripts/sync-to-obsidian.ts
     restart: always

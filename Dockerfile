@@ -9,6 +9,17 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 # Rebuild the source code only when needed
+FROM base AS dev-base
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npx prisma generate
+
+FROM dev-base AS development
+ENV NODE_ENV development
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
