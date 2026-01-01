@@ -1,7 +1,13 @@
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
+import { genkit } from 'genkit';
+import { ollama } from 'genkitx-ollama';
+import { googleAI } from '@genkit-ai/google-genai';
 
 export const ai = genkit({
-  plugins: [googleAI()],
-  model: process.env.GOOGLE_GENAI_MODEL || 'googleai/gemini-2.0-flash',
+  plugins: [
+    ollama({
+      serverAddress: process.env.OLLAMA_HOST || 'http://host.docker.internal:11434',
+    }),
+    googleAI(),
+  ],
+  model: process.env.OLLAMA_MODEL || 'ollama/llama3.2',
 });

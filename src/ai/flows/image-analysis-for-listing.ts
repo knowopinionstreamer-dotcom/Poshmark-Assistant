@@ -56,6 +56,7 @@ const imageAnalysisPrompt = ai.definePrompt({
   {{media url=this}}
   {{/each}}
   `,
+  model: 'googleai/gemini-1.5-pro',
 });
 
 export async function analyzeImagesToGenerateItemDetails(

@@ -3,6 +3,10 @@ import path from 'path';
 
 const VAULT_DIR = '/app/obsidian/Poshmark Assistant';
 const FILES_TO_SYNC = [
+  'STARTUP_GUIDE.md',
+  'README.md',
+  'INSTRUCTIONS.md',
+  'COMMANDS.md',
   'HOMELAB_MANUAL.md',
   'CHANGELOG.md',
   'HOMELAB_RECOVERY.md',

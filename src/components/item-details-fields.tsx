@@ -6,6 +6,9 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 type ItemDetailsFieldsProps = {
   isAnalyzing: boolean;
@@ -15,9 +18,20 @@ type ItemDetailsFieldsProps = {
 const FieldSkeleton = () => <Skeleton className="h-10 w-full" />;
 
 export default function ItemDetailsFields({ isAnalyzing, footerActions }: ItemDetailsFieldsProps) {
-  const { control } = useFormContext();
+  const { control, getValues } = useFormContext();
+  const { toast } = useToast();
   const genders = ['Womens', 'Mens', 'Unisex', 'Kids'];
   const conditions = ['New with tags', 'Excellent used condition', 'Good used condition', 'Fair condition', 'Used'];
+
+  const copyToClipboard = (fieldName: string, label: string) => {
+    const value = getValues(fieldName);
+    if (!value) {
+        toast({ variant: "destructive", title: "Nothing to copy", description: `The ${label} is currently empty.` });
+        return;
+    }
+    navigator.clipboard.writeText(value);
+    toast({ title: "Copied!", description: `${label} has been copied.` });
+  };
 
   return (
     <Card>
@@ -160,6 +174,36 @@ export default function ItemDetailsFields({ isAnalyzing, footerActions }: ItemDe
                     </FormItem>
                 )}
                 />
+                <div className="sm:col-span-2">
+                    <FormField
+                    control={control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                        <div className="flex items-center justify-between">
+                            <FormLabel>Extracted Details / Notes</FormLabel>
+                            <Button 
+                                type="button" 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-6 px-2 text-xs text-muted-foreground hover:text-primary"
+                                onClick={() => copyToClipboard('description', 'Description')}
+                            >
+                                <Copy className="mr-1 h-3 w-3" /> Copy
+                            </Button>
+                        </div>
+                        <FormControl>
+                            <textarea 
+                                className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                placeholder="Detailed description extracted from images..."
+                                {...field} 
+                            />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
             </>
             )}
         </div>

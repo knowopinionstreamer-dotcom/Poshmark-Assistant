@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleSearch } from '@/lib/google-search';
 
 const PricingResearchInputSchema = z.object({
   brand: z.string().describe('The brand of the item.'),
@@ -36,30 +37,34 @@ export async function performPricingResearch(input: PricingResearchInput): Promi
 
 const pricingResearchPrompt = ai.definePrompt({
   name: 'pricingResearchPrompt',
-  input: {schema: PricingResearchInputSchema},
+  input: {
+    schema: PricingResearchInputSchema.extend({
+      searchResults: z.string().optional().describe('Real-time search results from Google.'),
+    }),
+  },
   output: {schema: PricingResearchOutputSchema},
-  prompt: `You are an expert reseller strategist. Your goal is to provide a "Market Intel Report."
+  prompt: `You are an expert reseller strategist. Your goal is to provide a "Market Intel Report" based on REAL search data.
 
-### TASK 1: SEARCH LINKS
-Generate URLs for Poshmark (Sold), eBay (Sold), Mercari, and Amazon using ONLY "{{brand}} {{model}}".
+### INPUT DATA
+- Item: {{{brand}}} {{{model}}} {{{styleNumber}}} (Size: {{{size}}})
+- Condition: {{{condition}}}
+- **REAL MARKET DATA:** 
+{{{searchResults}}}
+
+### TASK 1: ANALYZE SEARCH RESULTS
+Review the provided "REAL MARKET DATA" above. Look for prices in the titles or snippets.
+If you see prices (e.g., "$45", "Sold for $50"), use them to calculate your suggestion.
 
 ### TASK 2: MARKET INTELLIGENCE
-1. **Demand Rating**: Rate the item's liquidity. 
-2. **Value Drivers**: Identify 2-3 specific reasons for the price.
-3. **Match Count**: Based on your knowledge and the style number, estimate how many "Exact Matches" currently exist in the sold market history.
+1. **Demand Rating**: Rate the item's liquidity based on the search results.
+2. **Value Drivers**: Identify 2-3 specific reasons for the price (e.g., "Sold out on official site", "High resale value seen in search").
+3. **Match Count**: How many relevant results did you find in the provided data?
 
 ### TASK 3: OPTIMAL PRICING
-- **Determine an optimal listing price**: Consider factors such as condition ({{{condition}}}), brand ({{{brand}}}), demand, and competitive pricing among both new and used items.
-- **Formulate a clear explanation**: Reference the market values and findings from your internal research.
-- **Combine**: Merge the determined optimal listing price and its explanation into a single, clear, copy-pasteable text section.
+- **Determine an optimal listing price**: Base this strictly on the search results provided. If no prices are in the results, estimate based on brand value.
+- **Formulate a clear explanation**: "Based on 5 search results, the average price is..."
 
-**Inputs:**
-- Brand: {{{brand}}}
-- Model: {{{model}}}
-- Visual Search Query: {{{visualSearchQuery}}}
-- Style Number: {{{styleNumber}}}
-- Size: {{{size}}}
-- Condition: {{{condition}}}
+**Return the output as JSON.**
   `,
 });
 
@@ -70,9 +75,25 @@ const pricingResearchFlow = ai.defineFlow(
     outputSchema: PricingResearchOutputSchema,
   },
   async input => {
-    const {output} = await pricingResearchPrompt(input, {
+    // 1. Construct the search query
+    const query = `${input.brand} ${input.model} ${input.styleNumber || ''} ${input.visualSearchQuery || ''} price`.trim();
+    
+    // 2. Perform the Google Search
+    console.log(`🔍 Searching Google for: "${query}"...`);
+    const results = await googleSearch(query);
+    
+    // 3. Format results for the LLM
+    const formattedResults = results.map(r => 
+      `- Title: ${r.title}\n  Snippet: ${r.snippet}\n  Link: ${r.link}`
+    ).join('\n\n');
+
+    // 4. Call the LLM with the search data
+    const {output} = await pricingResearchPrompt({
+      ...input,
+      searchResults: formattedResults || "No search results found.",
+    }, {
       config: {
-        temperature: 0, // Enforce consistent, non-random results
+        temperature: 0.2, 
       }
     });
     return output!;

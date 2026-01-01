@@ -8,16 +8,20 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}
       - DATABASE_URL=file:/app/prisma/dev.db
       - NODE_ENV=development
       - WATCHPACK_POLLING=true
+      - OLLAMA_HOST=http://172.26.48.1:11434
+      - OLLAMA_MODEL=llama3.2
+      - GOOGLE_SEARCH_API_KEY=${GOOGLE_SEARCH_API_KEY}
+      - GOOGLE_SEARCH_CX=${GOOGLE_SEARCH_CX}
+      - GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}
     volumes:
       - .:/app
       - /app/.next
       - /app/node_modules
       - "/mnt/e/Homelab/Poshmark photos:/app/photos"
-      - "/mnt/e/WSL/Obsidian/Homelab/Homelab:/app/obsidian"
+      - "/mnt/e/WSL/Poshmark-Final-Vault:/app/obsidian"
     command: npm run dev
     restart: always
 
@@ -27,7 +31,7 @@ services:
     user: root
     volumes:
       - .:/app
-      - "/mnt/e/WSL/Obsidian/Homelab/Homelab:/app/obsidian"
+      - "/mnt/e/WSL/Poshmark-Final-Vault:/app/obsidian"
     working_dir: /app
     environment:
       - NODE_ENV=development

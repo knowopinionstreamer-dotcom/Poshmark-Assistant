@@ -46,24 +46,19 @@ const draftGenerationPrompt = ai.definePrompt({
 - **Constraint**: Maximum 80 characters.
 
 ### TASK 2: GENERATE DESCRIPTION
-- **Tone**: Light, friendly, and professional.
-- **Emoji Style**: Use emojis sparingly (e.g., only at the start of section headers).
-- **Constraint**: **ABSOLUTELY NO MENTION** of condition (New, Used, etc.).
+- **Tone**: Professional, easy to read, and fun. Use descriptive words to make the item sound appealing.
+- **Emoji Style**: Use only a few emojis in the right spots (e.g., to highlight the bullet list). Do not overuse them.
 - **Structure**:
-  1. **Intro**: A welcoming 1-2 sentence summary hook about the item.
-  2. **📦 Item Details**:
-     - **Brand:** {{{brand}}}
-     - **Model:** {{{model}}}
-     - **Style Number:** {{{styleNumber}}}
-     - **Style:** {{{style}}}
-     - **Color:** {{{color}}}
-     - **Size:** {{{size}}}
-     - **Gender:** {{{gender}}}
-  3. **✨ Highlights**:
-     - Feature 1
-     - Feature 2
-     - Feature 3
-  4. **Hashtags**: Add 5 trending hashtags at the very bottom.
+  1. **Intro**: Write 2-3 sentences describing the item. Use engaging, descriptive language.
+  2. **Details List**: Create a clean bulleted list for the item specs.
+     - Brand: {{{brand}}}
+     - Model: {{{model}}}
+     - Style Code: {{{styleNumber}}}
+     - Color: {{{color}}}
+     - Size: {{{size}}}
+     - Material/Style: {{{style}}}
+  3. **Exclusion**: Do NOT include "Condition", "New", or "Used" in the bullet list or description.
+  4. **Closing**: A short, friendly closing sentence (e.g., "Ready for a new home!").
 
 **Inputs:**
 - Brand: {{{brand}}}
